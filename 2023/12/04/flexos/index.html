@@ -9,12 +9,12 @@
   <meta name="description" content="Abstact在设计时，现代操作系统被锁定在特定的安全和隔离策略中，该策略混合了一个或多个硬件&#x2F;软件保护机制 (例如用户&#x2F;内核分离); 在部署后重新审视这些选择需要大量的重构工作。当推出新的硬件隔离机制时，或者当现有的硬件隔离机制中断时，考虑到各种各样的现代应用程序的安全&#x2F;性能要求，这种严格的方法显示了其局限性。FlexOS，这是一种新颖的操作系统，允许用户在编译&amp;#">
 <meta property="og:type" content="article">
 <meta property="og:title" content="ASPLOS&#39;22:FlexOS:Towards Flexible OS Isolation">
-<meta property="og:url" content="https://worstkid92.github.io/papers.github.io/2023/12/04/article-title/index.html">
+<meta property="og:url" content="https://worstkid92.github.io/papers.github.io/2023/12/04/flexos/index.html">
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="Abstact在设计时，现代操作系统被锁定在特定的安全和隔离策略中，该策略混合了一个或多个硬件&#x2F;软件保护机制 (例如用户&#x2F;内核分离); 在部署后重新审视这些选择需要大量的重构工作。当推出新的硬件隔离机制时，或者当现有的硬件隔离机制中断时，考虑到各种各样的现代应用程序的安全&#x2F;性能要求，这种严格的方法显示了其局限性。FlexOS，这是一种新颖的操作系统，允许用户在编译&amp;#">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2023-12-04T01:17:43.000Z">
-<meta property="article:modified_time" content="2023-12-04T08:55:53.920Z">
+<meta property="article:modified_time" content="2023-12-05T01:03:24.742Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="unikraft,security">
 <meta name="twitter:card" content="summary">
@@ -72,9 +72,9 @@
 </header>
 
       <div class="outer">
-        <section id="main"><article id="post-article-title" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+        <section id="main"><article id="post-flexos" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
-    <a href="/papers.github.io/2023/12/04/article-title/" class="article-date">
+    <a href="/papers.github.io/2023/12/04/flexos/" class="article-date">
   <time class="dt-published" datetime="2023-12-04T01:17:43.000Z" itemprop="datePublished">2023-12-04</time>
 </a>
     
@@ -95,11 +95,22 @@
     <div class="e-content article-entry" itemprop="articleBody">
       
         <h2 id="Abstact"><a href="#Abstact" class="headerlink" title="Abstact"></a>Abstact</h2><p>在设计时，现代操作系统被锁定在特定的安全和隔离策略中，该策略混合了一个或多个硬件&#x2F;软件保护机制 (例如用户&#x2F;内核分离); 在部署后重新审视这些选择需要大量的重构工作。当推出新的硬件隔离机制时，或者当现有的硬件隔离机制中断时，考虑到各种各样的现代应用程序的安全&#x2F;性能要求，这种严格的方法显示了其局限性。<br>FlexOS，这是一种新颖的操作系统，允许用户在编译&#x2F;部署时间而不是设计时间轻松地专门化操作系统的安全和隔离策略。这种模块化的LibOS是由不同粒度的组件组成。这些组件可以通过一系列硬件保护机制与各种数据共享策略和额外的软件强化进行隔离。操作系统采用探索技术，可帮助用户导航其解锁的广阔安全&#x2F;性能设计空间。我们实现了该系统的原型，并针对多个应用程序 (Redis&#x2F;Nginx&#x2F;SQLite) 演示了flexos的广阔配置空间以及探索技术的效率:我们评估了80个Redis的FlexOS配置，并展示了在给定的性能预算下，如何将该空间概率地子集为5个最安全的空间。我们还表明，在等效配置下，FlexOS的性能与使用固定安全配置的现有解决方案相似或更好。<br>从摘要看出，这篇文章需要在大量的配置空间中寻找最安全的libs配置</p>
+<h2 id="1-Intro"><a href="#1-Intro" class="headerlink" title="1.Intro"></a>1.Intro</h2><p>论文贡献如下：</p>
+<p>使用FlexOS，用户可以在构建时决定应将哪些细粒度的OS组件放置在哪个隔室 (例如调度程序，tcp&#x2F;ip堆栈等) 中，如何为每个隔室实例化隔离和保护原语，使用哪些数据共享策略进行隔室之间的通信，以及应该在哪些隔室上应用什么软件强化机制。为此，FlexOS抽象了在通用API后面划分任意软件时所需的通用操作，该通用API用于将现有的libo改造为FlexOS。（即库的整合）<br>由于这种库的编排存在大量的组合空间，FlexOS还提出一种partial safety ordering技术，在给定性能要求下实现最优资源配置。<br>作者希望在微内核空间的绝对安全（但性能低）和完全信任应用的单地址空间操作系统（安全性差）中找到平衡。</p>
+<p>实验层面：<br>FlexOS支持 Intel MPK和 VM&#x2F;EPT级别的隔离，以及广泛的加固机制（CFI（Control-Flow Integrity），ASAN（address sanitization，地址净化技术，用以避免一些潜在的地址泄漏问题））<br>使用四个流行应用程序进行的评估展示了FlexOS解锁的广泛安全性与性能权衡空间: 我们评估了Redis和Nginx的160多个配置。<br>证明了在等效配置下，FlexOS的性能更好或类似于基线&#x2F;竞争对手: 整体内核，SASOS（Single-Address-Space OS），微内核和分隔的libos。</p>
+<h2 id="2-Flexible-Isolation-Principles-and-Challenges"><a href="#2-Flexible-Isolation-Principles-and-Challenges" class="headerlink" title="2. Flexible Isolation: Principles and Challenges"></a>2. Flexible Isolation: Principles and Challenges</h2><h3 id="2-1-Principles"><a href="#2-1-Principles" class="headerlink" title="2.1 Principles"></a>2.1 Principles</h3><p>(P1) Flexos组件的隔离粒度应该是可配置的。分隔策略，即隔室的数量以及哪些组件被合并&#x2F;拆分为隔室，对安全性和性能有重大影响，因此它应该是可配置的。</p>
+<p>(P2) 所使用的硬件隔离机制应该是可配置的。存在广泛的隔离机制，具有各种安全性和性能影响。这些应该由用户配置。对于OS开发人员而言，支持新机制不应涉及任何重写&#x2F;重新设计，而应与实现定义明确的API一样简单。</p>
+<p>(P3) 软件硬化和隔离机制应该是可配置的。诸如CFI或软件故障隔离 (SFI) 之类的软件强化技术，以及诸如Rust之类的内存安全语言，以可变的性能成本带来了不同级别的安全性。它们应该选择性地适用于在给定用例中它们最有意义的组件。</p>
+<p>(P4) 灵活性不应该以性能为代价。OS运行时性能应类似于在没有灵活性方法的情况下使用任何特定的安全配置所实现的性能。</p>
+<p>(P5) 与现有软件的兼容性不应以很高的移植成本来最大程度地采用。</p>
+<p>(P6) 应在FlexOS启用的广阔设计空间中引导用户。鉴于其非常大的配置空间，该系统应配备工具，可帮助用户针对给定的用例识别合适的安全&#x2F;性能配置。</p>
+<h3 id="2-2-Challenges-and-Approach"><a href="#2-2-Challenges-and-Approach" class="headerlink" title="2.2 Challenges and Approach"></a>2.2 Challenges and Approach</h3><p>P1和P4是考虑在隔离上平衡性能和通用性的问题，通过Unikraft，再加代码转译来实现。（参考文献主要是libOS相关）<br>P2和P5是考虑如何在现有系统中引入多种硬件隔离机制，同时降低引入成本。这里引入原文来解释一下：<br>技术不可知论在userland软件中已经很困难，但是核心内核设施 (中断处理，内存管理，调度) 引入了额外的复杂性，根据底层隔离技术的不同，这些复杂性应该被非常不同地处理。例如，某些技术在保护域之间共享单个地址空间 (例如MPK [15])，而其他技术则使用不相交的地址空间 (例如TEEs [3]，EPT)。FlexOS的主要思想是抽象现有的隔离技术，并根据技术确定需要不同处理的内核设施，并设计这些子系统，以最大程度地减少实现新技术时所需的更改。</p>
+<p>P5同时要求减少移植工作量要求。FlexOS应该是扩充了Unikraft的可视化界面（参考工作是安全、性能相关的进程隔离ATC</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://worstkid92.github.io/papers.github.io/2023/12/04/article-title/" data-id="clpqoeq340000r0vac7zr05hk" data-title="ASPLOS&#39;22:FlexOS:Towards Flexible OS Isolation" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="https://worstkid92.github.io/papers.github.io/2023/12/04/flexos/" data-id="clprn9wwu0000akvagiivbfns" data-title="ASPLOS&#39;22:FlexOS:Towards Flexible OS Isolation" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -112,9 +123,9 @@
 <nav id="article-nav">
   
   
-    <a href="/papers.github.io/2023/11/28/1st-article-title/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/papers.github.io/2023/12/04/demikedrnel/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">1st article title</div>
+      <div class="article-nav-title">ASPLOS &#39;21:CubicleOS:a library OS with software componentisation for practical isolation</div>
     </a>
   
 </nav>
@@ -134,7 +145,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/papers.github.io/tags/unikraft-security/" rel="tag">unikraft,security</a></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/papers.github.io/tags/libos-security/" rel="tag">libos,security</a></li><li class="tag-list-item"><a class="tag-list-link" href="/papers.github.io/tags/unikraft-security/" rel="tag">unikraft,security</a></li></ul>
     </div>
   </div>
 
@@ -144,7 +155,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/papers.github.io/tags/unikraft-security/" style="font-size: 10px;">unikraft,security</a>
+      <a href="/papers.github.io/tags/libos-security/" style="font-size: 10px;">libos,security</a> <a href="/papers.github.io/tags/unikraft-security/" style="font-size: 10px;">unikraft,security</a>
     </div>
   </div>
 
@@ -166,7 +177,11 @@
       <ul>
         
           <li>
-            <a href="/papers.github.io/2023/12/04/article-title/">ASPLOS&#39;22:FlexOS:Towards Flexible OS Isolation</a>
+            <a href="/papers.github.io/2023/12/04/flexos/">ASPLOS&#39;22:FlexOS:Towards Flexible OS Isolation</a>
+          </li>
+        
+          <li>
+            <a href="/papers.github.io/2023/12/04/demikedrnel/">ASPLOS &#39;21:CubicleOS:a library OS with software componentisation for practical isolation</a>
           </li>
         
           <li>
