@@ -69,6 +69,45 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-DoOSAbstractionsMakeSenseOnFPGA" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/papers.github.io/2023/12/05/DoOSAbstractionsMakeSenseOnFPGA/" class="article-date">
+  <time class="dt-published" datetime="2023-12-05T01:28:57.000Z" itemprop="datePublished">2023-12-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/papers.github.io/2023/12/05/DoOSAbstractionsMakeSenseOnFPGA/">OSDI20:Do OS Abstractions Make Sense On FPGA</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h1 id="Abstraction"><a href="#Abstraction" class="headerlink" title="Abstraction"></a>Abstraction</h1><p>混合计算系统由 CPU 服务器和用于应用加速的现场可编程门阵列 (FPGA) 组成，如今已成为数据中心和云中的常见设施。FPGA 可以为一定范围的工作负载提供性能和能源效率方面的巨大改进，但基于 FPGA 的应用程序的开发和部署仍然很麻烦，导致最近的工作将传统操作系统执行环境的子集（虚拟内存、进程等）复制到网络中,在FPGA上。<br>在本文中，我们提出了一个不同的问题：传统操作系统抽象在 FPGA 作为混合系统一部分的背景下在多大程度上有意义，特别是当作为一个完整的包时，就像它们在操作系统中一样？为了回答这个问题，我们构建并评估了 Coyote，这是一个开源、可移植、可配置的 FPGA“外壳”，它提供了与主机操作系统配合使用的全套操作系统抽象。Coyote 支持统一执行环境内租户、虚拟内存、通信和内存管理之间 FPGA 的安全空间和时间复用。Coyote 的开销很小，性能优势也很显着，但更重要的是，它让我们能够反思将操作系统抽象批量导入 FPGA 是否是最好的前进方式。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://worstkid92.github.io/papers.github.io/2023/12/05/DoOSAbstractionsMakeSenseOnFPGA/" data-id="clprq3znk00001kvahmuwajyz" data-title="OSDI20:Do OS Abstractions Make Sense On FPGA" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-flexos" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/papers.github.io/2023/12/04/flexos/" class="article-date">
@@ -295,6 +334,10 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/papers.github.io/2023/12/05/DoOSAbstractionsMakeSenseOnFPGA/">OSDI20:Do OS Abstractions Make Sense On FPGA</a>
+          </li>
         
           <li>
             <a href="/papers.github.io/2023/12/04/flexos/">ASPLOS&#39;22:FlexOS:Towards Flexible OS Isolation</a>
