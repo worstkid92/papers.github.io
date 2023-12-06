@@ -64,4 +64,10 @@ ML 更适合设置这些操作系统配置。使用过去的工作负载和操�
 机器学习技术的进步以及“大数据”和计算资源的可用性使得我们可以在许多以前依赖人力的领域应用机器学习。我们相信操作系统也是这样一个领域。本文系统地探讨了在操作系统中使用机器学习的机会和挑战。这当然只是构建真正的学习操作系统解决方案的起点。我们预期会出现更多的设计、开发和部署挑战。然而，我们相信学习操作系统是一个值得探索的方向，希望本文能激发和帮助未来在这个领域的研究者和从业者。
 
 # 6 读后感
- Cited：Toward reconfigurable kernel datapaths with learned optimizations HOS21
+ Cited：Toward reconfigurable kernel datapaths with learned optimizations HOS21 针对policy，做in-kernel的ML
+ Operating Systems for Resource-adaptive Intelligent Software: Challenges and Opportunities
+
+ policy是成本/后果最小的
+ configuration的学习成本很高
+ mechenism就文中的例子来说收益可能是最高的，但是
+
