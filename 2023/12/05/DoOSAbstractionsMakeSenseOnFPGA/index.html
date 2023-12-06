@@ -6,16 +6,17 @@
   
   <title>OSDI20:Do OS Abstractions Make Sense On FPGA | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="Abstraction混合计算系统由 CPU 服务器和用于应用加速的现场可编程门阵列 (FPGA) 组成，如今已成为数据中心和云中的常见设施。FPGA 可以为一定范围的工作负载提供性能和能源效率方面的巨大改进，但基于 FPGA 的应用程序的开发和部署仍然很麻烦，导致最近的工作将传统操作系统执行环境的子集（虚拟内存、进程等）复制到网络中,在FPGA上。在本文中，我们提出了一个不同的问题：传统操作系统">
+  <meta name="description" content="Abstraction这篇论文主要探讨了在混合计算系统中，尤其是作为混合系统一部分的FPGA，传统的操作系统抽象在何种程度上是有意义的。混合计算系统由CPU服务器和用于应用加速的现场可编程门阵列（FPGA）组成，现在已经在数据中心和云中普遍存在。FPGA可以为一系列工作负载带来巨大的性能和能效改进，但是FPGA基础应用的开发和部署仍然很麻烦，这导致了最近的一些工作，它们在FPGA上复制了传统操作系">
 <meta property="og:type" content="article">
 <meta property="og:title" content="OSDI20:Do OS Abstractions Make Sense On FPGA">
 <meta property="og:url" content="https://worstkid92.github.io/papers.github.io/2023/12/05/DoOSAbstractionsMakeSenseOnFPGA/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="Abstraction混合计算系统由 CPU 服务器和用于应用加速的现场可编程门阵列 (FPGA) 组成，如今已成为数据中心和云中的常见设施。FPGA 可以为一定范围的工作负载提供性能和能源效率方面的巨大改进，但基于 FPGA 的应用程序的开发和部署仍然很麻烦，导致最近的工作将传统操作系统执行环境的子集（虚拟内存、进程等）复制到网络中,在FPGA上。在本文中，我们提出了一个不同的问题：传统操作系统">
+<meta property="og:description" content="Abstraction这篇论文主要探讨了在混合计算系统中，尤其是作为混合系统一部分的FPGA，传统的操作系统抽象在何种程度上是有意义的。混合计算系统由CPU服务器和用于应用加速的现场可编程门阵列（FPGA）组成，现在已经在数据中心和云中普遍存在。FPGA可以为一系列工作负载带来巨大的性能和能效改进，但是FPGA基础应用的开发和部署仍然很麻烦，这导致了最近的一些工作，它们在FPGA上复制了传统操作系">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2023-12-05T01:28:57.000Z">
-<meta property="article:modified_time" content="2023-12-05T01:30:10.890Z">
+<meta property="article:modified_time" content="2023-12-06T01:22:31.063Z">
 <meta property="article:author" content="John Doe">
+<meta property="article:tag" content="FPGA">
 <meta name="twitter:card" content="summary">
   
     <link rel="alternate" href="/papers.github.io/atom.xml" title="Hexo" type="application/atom+xml">
@@ -93,8 +94,16 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h1 id="Abstraction"><a href="#Abstraction" class="headerlink" title="Abstraction"></a>Abstraction</h1><p>混合计算系统由 CPU 服务器和用于应用加速的现场可编程门阵列 (FPGA) 组成，如今已成为数据中心和云中的常见设施。FPGA 可以为一定范围的工作负载提供性能和能源效率方面的巨大改进，但基于 FPGA 的应用程序的开发和部署仍然很麻烦，导致最近的工作将传统操作系统执行环境的子集（虚拟内存、进程等）复制到网络中,在FPGA上。<br>在本文中，我们提出了一个不同的问题：传统操作系统抽象在 FPGA 作为混合系统一部分的背景下在多大程度上有意义，特别是当作为一个完整的包时，就像它们在操作系统中一样？为了回答这个问题，我们构建并评估了 Coyote，这是一个开源、可移植、可配置的 FPGA“外壳”，它提供了与主机操作系统配合使用的全套操作系统抽象。Coyote 支持统一执行环境内租户、虚拟内存、通信和内存管理之间 FPGA 的安全空间和时间复用。Coyote 的开销很小，性能优势也很显着，但更重要的是，它让我们能够反思将操作系统抽象批量导入 FPGA 是否是最好的前进方式。</p>
-
+        <h1 id="Abstraction"><a href="#Abstraction" class="headerlink" title="Abstraction"></a>Abstraction</h1><p>这篇论文主要探讨了在混合计算系统中，尤其是作为混合系统一部分的FPGA，传统的操作系统抽象在何种程度上是有意义的。混合计算系统由CPU服务器和用于应用加速的现场可编程门阵列（FPGA）组成，现在已经在数据中心和云中普遍存在。FPGA可以为一系列工作负载带来巨大的性能和能效改进，但是FPGA基础应用的开发和部署仍然很麻烦，这导致了最近的一些工作，它们在FPGA上复制了传统操作系统执行环境的子集（如虚拟内存，进程等）<br>为了回答这个问题，他们构建并评估了Coyote，这是一个为FPGA提供完整的操作系统抽象的开源、可移植、可配置的“shell”，并与主机操作系统一起工作。Coyote支持在租户之间对FPGA进行安全的空间和时间复用，虚拟内存，通信和内存管理都在一个统一的执行环境中。Coyote的开销很小，性能优势显著，但更重要的是，它让我们能够反思将操作系统抽象整体导入到FPGA是否是最好的前进方式。。</p>
+<h1 id="1-Intro"><a href="#1-Intro" class="headerlink" title="1.Intro"></a>1.Intro</h1><p>现场可编程门阵列 (FPGA) 现已成为数据中心和云提供商的标准配置 [1, 3, 12]，与 ASIC 或 GPU 相比，它以更低的功耗为许多应用提供了更大的灵活性.尽管（由于其在嵌入式系统和原型设计方面的传统）仍然难以编程、部署和安全管理。因此，随着大量研究使 FPGA 更易于编程 ，最近的大量工作将操作系统设计和实现的思想应用到资源分配、共享、隔离和管理以 FPGA 为中心的计算机。<br>到目前为止，这项工作是零碎的，专注于功能的特定方面，例如Feniks  的目标是 FPGA 访问外设，Optimus通过地址转换等提供对主机虚拟内存的访问。这些都比现有技术产生了实质性的增量改进。与此同时，良好的操作系统设计之所以如此具有挑战性，是因为内核中所有功能之间的密切交互。不支持多个应用程序（多租户）或它们之间的强隔离的虚拟内存的用途有限。在不提供虚拟寻址和创建抽象硬件的通用执行环境的情况下虚拟化硬件设备，大部分问题都没有得到解决。无法利用动态重新配置芯片部件的能力的 FPGA 调度器的保质期有限，等等。因此，我们退一步问一个问题：传统操作系统概念（进程、虚拟内存等）在多大程度上可以（或应该）有效地转化为 FPGA？当他们出现时会发生什么？为了回答这个问题，我们需要采用全面、整体的方法并考虑完整的功能，而不是拘泥于操作系统的特定方面或仅支持有限的 FPGA 功能。<br>为此，我们构建了 Coyote，将一套连贯的操作系统抽象组合到一个统一的运行时中，用于基于 FPGA 的应用。像微内核一样，Coyote 提供了一套核心的基本功能，其他服务可基于这些功能：统一的执行环境和可移植性层、虚拟内存、物理内存管理、通信、空间和时间调度、网络，以及用户逻辑的软件进程或任务模拟。它以最小的开销（不到商用 FPGA 的 15%）实现了这些目标。 因此，我们在本文中的贡献如下：</p>
+<ol>
+<li>对于一系列操作系统抽象，在与其他操作系统交互的背景下，对每个操作系统如何映射到 FPGA 进行关键评估。</li>
+<li>在 Coyote 中实现完整的集成，Coyote 是一种用于混合的可配置 FPGA“操作系统”计算服务器。</li>
+<li>使用微基准和 5 个实际应用对 Coyote 进行定量评估。 </li>
+<li>定性讨论这项工作对未来 FPGA 和操作系统设计的影响。<br>我们从任何 FPGA 操作系统都必须处理的基本硬件入手。这决定了 Coyote 的高层结构。</li>
+</ol>
+<h1 id="2-Foundation"><a href="#2-Foundation" class="headerlink" title="2.Foundation"></a>2.Foundation</h1><p>Coyote 以混合系统为目标，通过 PCIe、CXL 、CCIX或 OpenCAPI等外设总线将传统 CPU 与 FPGA 结合在一起，或采用英特尔 HARP或 ETH Enzian等本地一致性协议。如今，Coyote 可在装有 Xilinx VCU118、Alveo U250 [59] 和 Alveo U280 卡的 PC 上运行。向 Enzian 移植的工作正在进行中。我们避免任何可能妨碍使用现代 FPGA 功能（如多个区域的动态部分重新配置）或有用的 “硬 “片上功能的设计决策。 这就自然而然地将任何设计分割为在 FPGA 上运行的 “硬件 “组件和在主机 CPU 上作为操作系统和支持库的一部分运行的软件组件。 此外，FPGA 的动态重新配置将硬件组件进一步分割为 “静态区域 “和 “动态区域”，前者在启动时配置，后者包含子区域（vFPGA），每个子区域都可以即时更改。在所有 FPGA 数据中心部署中都存在这种分割（通常是简化形式）。在区域内和区域间，硬件组件通过 AXI等标准互连进行交互。<br>后面根据静态&#x2F;动态&#x2F;软件来介绍。</p>
+<h2 id="2-1静态区域"><a href="#2-1静态区域" class="headerlink" title="2.1静态区域"></a>2.1静态区域</h2>
       
     </div>
     <footer class="article-footer">
@@ -102,11 +111,22 @@
       
       
       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/papers.github.io/tags/FPGA/" rel="tag">FPGA</a></li></ul>
+
     </footer>
   </div>
   
     
 <nav id="article-nav">
+  
+    <a href="/papers.github.io/2023/12/06/learned-operating-system/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          learned operating system
+        
+      </div>
+    </a>
   
   
     <a href="/papers.github.io/2023/12/04/flexos/" id="article-nav-older" class="article-nav-link-wrap">
@@ -131,7 +151,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/papers.github.io/tags/libos-security/" rel="tag">libos,security</a></li><li class="tag-list-item"><a class="tag-list-link" href="/papers.github.io/tags/unikraft-security/" rel="tag">unikraft,security</a></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/papers.github.io/tags/FPGA/" rel="tag">FPGA</a></li><li class="tag-list-item"><a class="tag-list-link" href="/papers.github.io/tags/libos-security/" rel="tag">libos,security</a></li><li class="tag-list-item"><a class="tag-list-link" href="/papers.github.io/tags/unikraft-security/" rel="tag">unikraft,security</a></li></ul>
     </div>
   </div>
 
@@ -141,7 +161,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/papers.github.io/tags/libos-security/" style="font-size: 10px;">libos,security</a> <a href="/papers.github.io/tags/unikraft-security/" style="font-size: 10px;">unikraft,security</a>
+      <a href="/papers.github.io/tags/FPGA/" style="font-size: 10px;">FPGA</a> <a href="/papers.github.io/tags/libos-security/" style="font-size: 10px;">libos,security</a> <a href="/papers.github.io/tags/unikraft-security/" style="font-size: 10px;">unikraft,security</a>
     </div>
   </div>
 
@@ -163,6 +183,10 @@
       <ul>
         
           <li>
+            <a href="/papers.github.io/2023/12/06/learned-operating-system/">learned operating system</a>
+          </li>
+        
+          <li>
             <a href="/papers.github.io/2023/12/05/DoOSAbstractionsMakeSenseOnFPGA/">OSDI20:Do OS Abstractions Make Sense On FPGA</a>
           </li>
         
@@ -176,10 +200,6 @@
         
           <li>
             <a href="/papers.github.io/2023/11/28/1st-article-title/">1st article title</a>
-          </li>
-        
-          <li>
-            <a href="/papers.github.io/2023/11/28/hello-world/">Hello World</a>
           </li>
         
       </ul>
