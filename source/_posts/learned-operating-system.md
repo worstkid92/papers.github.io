@@ -64,10 +64,16 @@ ML 更适合设置这些操作系统配置。使用过去的工作负载和操�
 机器学习技术的进步以及“大数据”和计算资源的可用性使得我们可以在许多以前依赖人力的领域应用机器学习。我们相信操作系统也是这样一个领域。本文系统地探讨了在操作系统中使用机器学习的机会和挑战。这当然只是构建真正的学习操作系统解决方案的起点。我们预期会出现更多的设计、开发和部署挑战。然而，我们相信学习操作系统是一个值得探索的方向，希望本文能激发和帮助未来在这个领域的研究者和从业者。
 
 # 6 读后感
- Cited：Toward reconfigurable kernel datapaths with learned optimizations HOS21 针对policy，做in-kernel的ML
+ policy：是后果最小的，它的
+ configuration：学习成本很高。UNIKRAFT 0.15目前的配置项在百数量级，跟linux中的一个子系统的配置项数量相当。
+ mechenism就文中的例子来说收益可能是最高的，但是 
+ 
+ # 7 related：
+ Toward reconfigurable kernel datapaths with learned optimizations HOS21 
+ 在这篇论文中，作者们提出了一种可重配置的内核数据路径的概念。在这种架构中，优化是通过使用机器学习从经验数据中计算出来的，并通过内核虚拟机以安全和系统化的方式集成到内核中。这个虚拟机实现了可重配置匹配表（RMT）的抽象，其中表格被安装到内核中，当性能关键事件发生时，匹配查找当前的执行上下文，动作编码由ML计算出的特定于上下文的优化，这些优化可能会因应用程序而异。它做了试验是Page prefetching和Scheduler
  Operating Systems for Resource-adaptive Intelligent Software: Challenges and Opportunities
-
- policy是成本/后果最小的
- configuration的学习成本很高
- mechenism就文中的例子来说收益可能是最高的，但是
+在这篇论文中，作者们提出了一种新的操作系统抽象，即ServiceOS，用于未来的资源自适应智能软件系统。ServiceOS的理念受到了由服务导向架构（SOA）支持的“软件即服务”交付模型的启发。ServiceOS的关键原则基于资源解耦，资源作为服务的提供，以及基于学习的资源调度和分配。
+他们设想的架构将支持离线和在线学习算法，以及各种内核子系统。RMT验证器将在允许RMT程序进入内核之前检查程序的良构性和模型效率。一个被接纳的程序可以被解释为字节码或即时编译以优化内核数据路径。
+"Machine Learning for Load Balancing in the Linux Kernel"是一篇由Jingde Chen、Subho S. Banerjee、Zbigniew T. Kalbarczyk和Ravishankar K. Iyer共同撰写的论文。这篇论文探讨了如何将机器学习（ML）集成到Linux内核中，以实现动态的负载均衡。
+在这篇论文中，作者们提出了一种新的方法，即通过模仿学习将机器学习应用到Linux CFS负载均衡器的一部分。他们使用eBPF和kprobes对内核函数进行动态跟踪，用于系统的运行时数据收集。然后，他们训练了一个基于多层感知器（MLP）模型，该模型根据收集的训练数据模仿CFS负载均衡器。
 
