@@ -14,7 +14,7 @@
 <meta property="og:description" content="Abstract操作系统是计算机系统的核心，数十年来，人们一直致力于操作系统的研究和工程开发。为了跟上现代硬件和应用的发展速度，我们认为在未来的操作系统开发中应采取不同的方法。我们不应完全依赖人类的智慧，而应利用人工智能和机器学习技术来自动 “学习 “如何构建和调整操作系统。本文探讨了 “学习 “操作系统方法的机遇和挑战，并就如何构建这样的操作系统向未来的研究人员和从业人员提出了建议。 1 Int">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2023-12-06T02:12:31.000Z">
-<meta property="article:modified_time" content="2023-12-06T11:01:41.470Z">
+<meta property="article:modified_time" content="2023-12-08T06:33:56.158Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
   
@@ -106,8 +106,8 @@
 <h2 id="3-5-安全性"><a href="#3-5-安全性" class="headerlink" title="3.5 安全性"></a>3.5 安全性</h2><p>操作系统应该为应用程序提供对硬件资源的保护访问。使用学习的操作系统方法，使用应用程序数据学习的机器学习模型在操作系统中使用是否安全呢？尽管我们设想所有与安全和保护相关的任务在操作系统中仍然以传统的方式实现，但是在操作系统内核的其余部分使用机器学习可以引入独特的安全威胁和影响。<br>当在操作系统中应用机器学习技术时，用户数据将间接地参与到操作系统的控制平面中。如果没有适当的保护，恶意用户将能够通过提供精心制作的数据来操纵训练和推理过程。这样做可能会导致操作系统使用错误的机器学习模型，这些模型对攻击者有利。例如，攻击者可以训练一个机器学习模型，使其总是驱逐其他应用程序的内存，并发起拒绝服务攻击。它还可以生成一个糟糕的机器学习模型，导致操作系统不断地预测失误，性能下降。对不同的应用程序使用不同的机器学习模型（即机器学习的隔离）可以大大提高学习操作系统的安全性。然而，保护免受侧信道攻击和防止信息泄露仍然是一项挑战。</p>
 <h1 id="4-相关工作"><a href="#4-相关工作" class="headerlink" title="4 相关工作"></a>4 相关工作</h1><p>针对其他低级系统的机器学习。最近的学习索引工作提出了用预测数据位置的神经网络模型替换传统的基于树的索引结构。学习索引启发了许多后续的研究工作。事实上，这篇论文也受到了它的启发。学习索引的后续工作是SageDB，一个学习数据库系统。除了索引，它还使用机器学习进行合并和哈希连接操作。学习索引的另一个扩展是学习布隆过滤器。还有许多提议使用机器学习来解决各种硬件问题。更相关的是一项最近的工作，该工作使用循环神经网络（RNN）预测内存访问模式并执行内存预取。<br>针对操作系统的机器学习。尽管机器学习已经在许多领域中使用，最近在低级系统中的使用也更多，但操作系统很少采用任何机器学习技术，大多数研究提议都可以追溯到几十年前。例如，有几个提议使用机器学习技术（例如C4.5决策树，线性回归）来改善应用程序作业的平均周转时间，例如，通过调整内核抢占时间和通过预测作业运行时间。Lynx是一个使用机器学习更好地执行SSD预取的系统。它利用马尔可夫链来检测I&#x2F;O工作负载模式并计算文件页之间的转移概率。</p>
 <h1 id="5-结论"><a href="#5-结论" class="headerlink" title="5 结论"></a>5 结论</h1><p>机器学习技术的进步以及“大数据”和计算资源的可用性使得我们可以在许多以前依赖人力的领域应用机器学习。我们相信操作系统也是这样一个领域。本文系统地探讨了在操作系统中使用机器学习的机会和挑战。这当然只是构建真正的学习操作系统解决方案的起点。我们预期会出现更多的设计、开发和部署挑战。然而，我们相信学习操作系统是一个值得探索的方向，希望本文能激发和帮助未来在这个领域的研究者和从业者。</p>
-<h1 id="6-读后感"><a href="#6-读后感" class="headerlink" title="6 读后感"></a>6 读后感</h1><p> Cited：Toward reconfigurable kernel datapaths with learned optimizations HOS21 针对policy，做in-kernel的ML<br> Operating Systems for Resource-adaptive Intelligent Software: Challenges and Opportunities</p>
-<p> policy是成本&#x2F;后果最小的<br> configuration的学习成本很高<br> mechenism就文中的例子来说收益可能是最高的，但是</p>
+<h1 id="6-读后感"><a href="#6-读后感" class="headerlink" title="6 读后感"></a>6 读后感</h1><p> policy：是后果最小的，它的<br> configuration：学习成本很高。UNIKRAFT 0.15目前的配置项在百数量级，跟linux中的一个子系统的配置项数量相当。<br> mechenism就文中的例子来说收益可能是最高的，但是 </p>
+<h1 id="7-related："><a href="#7-related：" class="headerlink" title="7 related："></a>7 related：</h1><p> Toward reconfigurable kernel datapaths with learned optimizations HOS21<br> 在这篇论文中，作者们提出了一种可重配置的内核数据路径的概念。在这种架构中，优化是通过使用机器学习从经验数据中计算出来的，并通过内核虚拟机以安全和系统化的方式集成到内核中。这个虚拟机实现了可重配置匹配表（RMT）的抽象，其中表格被安装到内核中，当性能关键事件发生时，匹配查找当前的执行上下文，动作编码由ML计算出的特定于上下文的优化，这些优化可能会因应用程序而异。它做了试验是Page prefetching和Scheduler<br> Operating Systems for Resource-adaptive Intelligent Software: Challenges and Opportunities<br>在这篇论文中，作者们提出了一种新的操作系统抽象，即ServiceOS，用于未来的资源自适应智能软件系统。ServiceOS的理念受到了由服务导向架构（SOA）支持的“软件即服务”交付模型的启发。ServiceOS的关键原则基于资源解耦，资源作为服务的提供，以及基于学习的资源调度和分配。<br>他们设想的架构将支持离线和在线学习算法，以及各种内核子系统。RMT验证器将在允许RMT程序进入内核之前检查程序的良构性和模型效率。一个被接纳的程序可以被解释为字节码或即时编译以优化内核数据路径。<br>“Machine Learning for Load Balancing in the Linux Kernel”是一篇由Jingde Chen、Subho S. Banerjee、Zbigniew T. Kalbarczyk和Ravishankar K. Iyer共同撰写的论文。这篇论文探讨了如何将机器学习（ML）集成到Linux内核中，以实现动态的负载均衡。<br>在这篇论文中，作者们提出了一种新的方法，即通过模仿学习将机器学习应用到Linux CFS负载均衡器的一部分。他们使用eBPF和kprobes对内核函数进行动态跟踪，用于系统的运行时数据收集。然后，他们训练了一个基于多层感知器（MLP）模型，该模型根据收集的训练数据模仿CFS负载均衡器。</p>
 
       
     </div>
@@ -121,6 +121,15 @@
   
     
 <nav id="article-nav">
+  
+    <a href="/papers.github.io/2023/12/08/Toward-Reconfigurable-Kernel-Datapaths-with-Learned-Optimizations/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Toward Reconfigurable Kernel Datapaths with Learned Optimizations
+        
+      </div>
+    </a>
   
   
     <a href="/papers.github.io/2023/12/05/DoOSAbstractionsMakeSenseOnFPGA/" id="article-nav-older" class="article-nav-link-wrap">
@@ -177,23 +186,23 @@
       <ul>
         
           <li>
+            <a href="/papers.github.io/2023/12/21/reading-list/">reading list</a>
+          </li>
+        
+          <li>
+            <a href="/papers.github.io/2023/12/20/Towards-a-Machine-Learning-Assisted-Kernel-with-LAKE/">Towards a Machine Learning-Assisted Kernel with LAKE</a>
+          </li>
+        
+          <li>
+            <a href="/papers.github.io/2023/12/08/Toward-Reconfigurable-Kernel-Datapaths-with-Learned-Optimizations/">Toward Reconfigurable Kernel Datapaths with Learned Optimizations</a>
+          </li>
+        
+          <li>
             <a href="/papers.github.io/2023/12/06/learned-operating-system/">learned operating system</a>
           </li>
         
           <li>
             <a href="/papers.github.io/2023/12/05/DoOSAbstractionsMakeSenseOnFPGA/">OSDI20:Do OS Abstractions Make Sense On FPGA</a>
-          </li>
-        
-          <li>
-            <a href="/papers.github.io/2023/12/04/flexos/">ASPLOS&#39;22:FlexOS:Towards Flexible OS Isolation</a>
-          </li>
-        
-          <li>
-            <a href="/papers.github.io/2023/12/04/demikedrnel/">ASPLOS &#39;21:CubicleOS:a library OS with software componentisation for practical isolation</a>
-          </li>
-        
-          <li>
-            <a href="/papers.github.io/2023/11/28/1st-article-title/">1st article title</a>
           </li>
         
       </ul>

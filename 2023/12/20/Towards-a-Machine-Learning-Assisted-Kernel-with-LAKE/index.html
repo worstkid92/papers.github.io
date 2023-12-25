@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>Towards a Machine Learning-Assisted Kernel with LAKE | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="Intro硬件的演变和多样化正在推动现代操作系统复杂性的爆炸性增长。CPU核心数量已经增长，新的内存技术如HBM和NVM以及像NUMA这样的组织已经变得司空见惯，新的网络和加速技术的出现，所有这些都对操作系统施加了压力，要求其进行高效的资源管理，以保持硬件的承诺。操作系统内核包含了用于管理这些资源的子系统，如内存管理器、I&#x2F;O和进程调度以及文件系统，目前依赖于启发式方法来处理对性能至关重">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Towards a Machine Learning-Assisted Kernel with LAKE">
+<meta property="og:url" content="https://worstkid92.github.io/papers.github.io/2023/12/20/Towards-a-Machine-Learning-Assisted-Kernel-with-LAKE/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Intro硬件的演变和多样化正在推动现代操作系统复杂性的爆炸性增长。CPU核心数量已经增长，新的内存技术如HBM和NVM以及像NUMA这样的组织已经变得司空见惯，新的网络和加速技术的出现，所有这些都对操作系统施加了压力，要求其进行高效的资源管理，以保持硬件的承诺。操作系统内核包含了用于管理这些资源的子系统，如内存管理器、I&#x2F;O和进程调度以及文件系统，目前依赖于启发式方法来处理对性能至关重">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2023-12-20T00:51:16.000Z">
+<meta property="article:modified_time" content="2023-12-25T01:30:54.534Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/papers.github.io/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/papers.github.io/favicon.png">
+  
+  
+  
+<link rel="stylesheet" href="/papers.github.io/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/papers.github.io/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<meta name="generator" content="Hexo 7.0.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/papers.github.io/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/papers.github.io/">Home</a>
+        
+          <a class="main-nav-link" href="/papers.github.io/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/papers.github.io/atom.xml" title="RSS Feed"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="Search"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://worstkid92.github.io/papers.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-Towards-a-Machine-Learning-Assisted-Kernel-with-LAKE" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/papers.github.io/2023/12/20/Towards-a-Machine-Learning-Assisted-Kernel-with-LAKE/" class="article-date">
+  <time class="dt-published" datetime="2023-12-20T00:51:16.000Z" itemprop="datePublished">2023-12-20</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      Towards a Machine Learning-Assisted Kernel with LAKE
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h1 id="Intro"><a href="#Intro" class="headerlink" title="Intro"></a>Intro</h1><p>硬件的演变和多样化正在推动现代操作系统复杂性的爆炸性增长。CPU核心数量已经增长，新的内存技术如HBM和NVM以及像NUMA这样的组织已经变得司空见惯，新的网络和加速技术的出现，所有这些都对操作系统施加了压力，要求其进行高效的资源管理，以保持硬件的承诺。操作系统内核包含了用于管理这些资源的子系统，如内存管理器、I&#x2F;O和进程调度以及文件系统，目前依赖于启发式方法来处理对性能至关重要的复杂权衡空间。这些启发式方法是通过观察系统行为、结合内核开发者的经验来开发的，目标是提供合理的平均情况性能。</p>
+<p>随着硬件和软件复杂性的不断增加，机器学习（ML）已经成为一个有吸引力的替代方案，有潜力更好地导航当前由启发式方法处理的操作系统权衡空间。用ML替换启发式方法可以实现使用实时观察到的行为训练的系统特定解决方案。虽然已经提出了在操作系统子系统中使用ML支持的策略，如CPU负载平衡、文件系统预取、I&#x2F;O延迟预测、控制CPU时钟和功率等，但以前的工作只关注了ML对单个子系统的潜在益处。我们则关注从将ML决策集成到操作系统内核中产生的系统挑战。</p>
+<p>我们研究了五个可以用ML决策增强的基于启发式的内核子系统，包括进程调度、内存管理等。我们发现了一些重要的挑战，包括以下几点。C1 使用专用硬件如GPU&#x2F;TPU对于降低ML算法的性能影响至关重要，但在内核空间中对加速器的可访问性较差是采用的障碍。加速器卸载在加速器是I&#x2F;O附加时引入了额外的开销，并且在用户和内核空间使用加速器之间产生了新的争用形式。C2 对于ML的加速的好处是子系统、工作负载和硬件依赖的，因为硬件加速必须摊销数据传输的成本。C3 在抽象层边界和需要跨层数据共享以暴露用于训练和推理的特性之间存在基本的紧张关系。我们在这篇论文中解决了这些挑战，并分享了我们构建学习辅助、加速内核（LAKE）的经验。</p>
+<p>为了解决C1，LAKE使用API远程调用为内核空间应用提供供应商支持的加速器接口（例如CUDA API），对于需要使用难以移植到内核空间的库的应用，提供自定义的高级API（例如TensorFlow）。LAKE通过在内核应用和用户空间组件之间进行零拷贝数据移动来减少开销。用户和内核空间对专用硬件的并发使用引入了争用，LAKE使用策略回调框架来管理这种争用。我们发现，管理这种争用所需的相同机制可以被重新用于解决C2，即专用硬件的可变利润性。LAKE提供了一个自定义的策略接口用于争用控制，当策略预测到争用或性能收益不足时，允许内核利用加速器或回退到较少的强度和&#x2F;或基于CPU的解决方案。LAKE通过一个内核特性存储来解决C3，简化了为收集数据以通知训练和推理的内核子系统进行检测的任务，基于预期异步和抽象层边界等挑战的API。</p>
+<p>我们的实验表明，LAKE为内核空间的ML支持的子系统提供了高效的硬件加速，可以减少内核的CPU利用率，并通过争用管理避免对用户空间应用的性能降级。例如，LAKE为ML辅助的I&#x2F;O延迟预测提供了性能优势，将推理时间减少了高达95%，并将ML驱动的负载平衡推理加速提高了高达3.1倍。由于我们关注的是内核ML集成引起的系统问题，我们依赖于文献中的先前结果，这些结果展示了相对于启发式方法的ML支持策略的改进。然而，我们提出了一个端到端的IO调度案例研究，描述了加速的影响，发现ML的好处得以保留，硬件加速可以启用更丰富的模型。我们发现，LAKE的基础设施也可以用于启用ML领域之外的加速机会。我们评估了GPU加速的文件系统加密，发现潜在的读取吞吐量相对于AES-NI增加了高达62%，CPU利用率降低了高达64%。本文的贡献包括：<br>• 一个在内核空间暴露以ML为中心的硬件加速的框架（§4），具有管理争用（§4.3）和内核&#x2F;用户空间硬件加速器共享的可变性能利润性（§4.2）的接口。<br>• 一个框架和高效的API，简化了在不同内核子系统中的特性收集和管理（§5）。<br>• 当由LAKE的基础设施驱动时，评估现有内核子系统的CPU利用率降低和性能提升（§7）。</p>
+<p>2 背景<br>2.1 操作系统内核和机器学习<br>像Linux内核这样的单体内核，随着技术的发展，越来越多地积累了新的特性和责任。例如，Linux最初有一个简单的、贪婪的、时间片调度算法，只有一个任务列表。硬件的演变，例如核心数量的增加、超线程、非均匀内存访问（NUMA）和多个CPU插槽，迫使调度算法演变以支持这些特性。目前，Linux的调度器有一个更复杂的算法，使用自平衡树和每核任务列表，并必须在核心之间进行复杂的负载平衡以保持良好的利用率。这种问题维度的不断增加以及系统可以有不同特性的事实，使得设计高效的、通用的解决方案变得复杂，并导致启发式方法变得僵化，尽管需要解决各种各样的平台。</p>
+<p>Linux内核依赖于启发式方法来做出重要的决策，例如回收哪个页面以及如何在CPU之间平衡进程。启发式方法通常是复杂的、计算密集型的、有时不切实际的（例如NP-hard问题）解决方案的便宜替代品。启发式方法的目标是快速得到一个足够好的（局部最小值或最大值）解决方案，而不是花费太多时间探索解决方案空间以寻找最优解。内核使用的启发式方法是一种一刀切的方法，目标是平均情况。例如，一个I&#x2F;O密集型的服务器和一个计算密集型的服务器，如果使用相同的内核版本，都将使用相同的启发式方法；通过专门针对每个服务器的工作负载进行决策，性能可以得到改善。机器学习是这种固定启发式方法的一个可能的替代方案。</p>
+<p>例如，在文件系统预取中，Leap显示，应用程序在文件访问模式上有很高的变化，导致固定的模式查找算法在许多情况下表现不佳。机器学习可以应用于文件系统预取，以改善启发式方法的不足。这可以通过在线学习文件访问模式，在执行过程中，训练自定义模型来实现。</p>
+<p>2.2 加速器<br>专用加速器正在迅速增多：每年都会出现数十种新的特定目的的加速器和框架，以提高计算密集型工作负载的性能和效率。例如，GraphCore IPU和Google TPU等深度学习加速器可以提供比CPU高50倍的能效。近数据计算和分析，例如smartSSDs，将数据平面操作卸载到设备上，因为内部磁盘带宽远高于总线带宽。像GPU这样的通用加速器被广泛用于机器学习、生物信息学、加密货币等。</p>
+<p>然而，当前的软件和系统对加速器的支持仅限于用户模式程序。加速器附带用户库和内核驱动，其接口和实现是专有的。尽管存在许多加速器虚拟化技术（例如，固定和中介传递，API远程调用），可以为应用程序提供虚拟GPU，但没有现有的解决方案可以直接被内核空间应用程序使用。</p>
+<p>3 动机<br>我们将ML模型添加到操作系统内核的经验激励我们设计简化集成并赋予开发者使用可能计算密集的算法的基础设施。急需可以被当前和未来的通用应用使用的公共基础设施，以避免特定应用解决方案的增殖。一个关键的挑战是收集推理所需的特征数据，这可能需要在不同的抽象层、不同的模块中查询内核数据结构，这些模块具有不同的锁定规则。我们在第5节提出了一个API设计来应对这个挑战。我们还发现加速器（例如GPU）至关重要。它们的大规模并行性和高吞吐量使得可以实现更复杂和准确的模型；单独使用CPU往往无法满足性能要求。</p>
+<p>不幸的是，加速器堆栈通常不会暴露内核空间API，而通常依赖于将专有的高级API支持因子化到用户空间的内核旁路设计。因此，以前的内核加速系统已经使用手工构建的上调用来启用操作系统级别的与加速器的交互。一般的加速器虚拟化技术，如API远程调用是不够的；这些系统使用的通信传输要么不可用，要么对内核和用户空间之间的数据传输效率不高。</p>
+<p>将加速器暴露给内核空间揭示了操作系统和ML设置独特的机会和挑战。这个设置独特的关键挑战包括管理内核和用户空间应用程序之间对加速器的争用，减少跨用户-内核边界的不必要的数据移动，并使内核子系统能够根据性能和准确性的利润性在CPU和加速器之间调节。</p>
+<p>争用和性能变化。内核ML工作可以与用户空间工作争用访问加速器设备，与跨用户空间进程争用不同，没有明确的机制来管理这种争用。此外，加速必须摊销数据传输成本才能获得性能利润，这需要对输入进行批处理，这可能与内核的延迟目标相冲突。这两种资源管理挑战对操作系统来说都是新的，但操作系统有一个回退的替代方案，即使用CPU。</p>
+<p>对性能至关重要的用户应用程序需要稳定、可靠的访问专用硬件，以满足严格的截止期限。内核和用户空间之间对加速器的无节制的争用可能会破坏这些性能和QoS目标。图1演示了当GPU在一个由ML辅助的内核和一个计算绑定的用户进程之间共享时，由争用引起的性能病理现象。用户空间进程正在计算数据哈希，而内核使用GPU来加速页面热度分类和I&#x2F;O延迟预测。如争用和移动平均线所示，内核和用户空间之间的争用严重影响服务质量。应用程序的吞吐量显著降低和不稳定，降低了高达68%。</p>
+<p>数据移动。从内核空间调用用户空间API（通常通过上调用完成）需要对源上下文进行数据编组和复制到用户空间进程，并在完成后复制结果和修改的缓冲区。这可能导致在用户-内核边界上的冗余数据传输和不必要的同步，带来重大的性能损失（§6）。由于没有内核级接口可以将数据传输到加速器，因此必须首先将内核级数据缓冲区复制到用户空间，然后使用如cudaMemcpy等API将其复制到&#x2F;从加速器。内核机制的智能组合允许自动数据编组和消除用户-内核边界上的数据传输的双缓冲。</p>
+<p>3.1 讨论<br>为什么不直接使用加速器的接口？虽然直接支持内核级加速器API是可能的，但频繁变化的内部接口和缺乏公开可用的文档使得对加速器软件堆栈的部分进行逆向工程变得不切实际。加速器软件堆栈的不透明性要求硬件供应商自己暴露内核级API。尽管NVIDIA最近开源了其驱动程序的一部分[7]，但驱动程序并未向内核暴露必要的高级API。我们还发现，ML支持通常更好地由像TensorFlow这样的高级API提供（§7），因此需要更通用的对上调用的支持。</p>
+<p>设备能否直接管理争用？硬件供应商已经表现出他们愿意在硬件中启用一些争用管理。有一些加速器启用了单根I&#x2F;O虚拟化（SR-IOV），一些设备如SmartNICs和SmartSSDs提供了用于粗粒度争用管理和速率限制的API，或者允许开发者表达他们自己的策略。然而，基于硬件的解决方案往往不够灵活。操作系统内核开发者可能希望动态地在不同的争用管理策略之间进行选择。复杂且不断演变的争用管理策略更容易在软件中表达，而我们的经验是，并非每个加速器都会在硬件中支持细粒度的争用管理策略。机器学习需要额外的策略支持来处理争用管理单独无法解决的性能利润性变化。</p>
+<p>隔离是否受到影响？操作系统内核使用地址空间隔离作为他们的主要内存保护机制。我们依赖同样的机制来在将操作系统内核计算卸载到加速器时隔离内存。根据我们的经验，所有的加速器都支持某种类型的地址空间隔离。虽然任何将操作系统内核数据卸载到加速器的方法都可能暴露新的旁路通道，但我们将旁路通道缓解的调查留给未来的工作。</p>
+<p>4 使用LAKE进行内核加速<br>为了允许在内核中使用依赖加速器的复杂机器学习算法，LAKE必须提供基础设施，使得未来和当前的内核空间应用能够使用加速器。目前这是不可能的，因为加速器供应商提供的库是为用户空间设计的。在LAKE中，启用加速器访问内核空间的核心是一个API远程调用系统，该系统向内核子系统公开任意API。LAKE公开的API通过用户空间的一个进程的上调用来执行。图2显示了LAKE的设计。我们考虑一个系统，其中Linux作为主机操作系统，并且至少有一个加速器。尽管这项工作主要关注NVIDIA GPU和CUDA，但没有根本的问题阻止它扩展到其他加速器[85]。</p>
+<p>LAKE有三个主要组件：内核侧API提供者（lakeLib）、大量数据内核-用户通信通道（lakeShm）和实现API的用户侧守护进程（lakeD）。lakeLib是一个内核模块，它将加速器的供应商的用户空间库等API公开为内核空间的符号。这个模块有一个与它想要在内核空间支持的API同名的函数。例如，要在内核空间支持cuMemAlloc CUDA API，我们必须在lakeLib中有一个同名的函数。lakeLib中的每一个函数都做三件事：将API标识符和所有API参数序列化成一个命令，通过某个通信通道传输命令以在用户空间远程执行，最后，等待响应。</p>
+<p>lakeD是一个用户空间的守护进程，它监听来自lakeLib的命令，对它们进行反序列化并执行请求的API。这个守护进程必须能够访问供应商的库（例如cudart.so）以实现lakeLib请求的API。继续cuMemAlloc API的例子，这样的API的一个命令包括一个字段，该字段标识要执行的API及其参数：要分配多少字节以及一个指针来存储新分配的起始地址。lakeD反序列化命令以获取这些字段，使用供应商的原始库执行API，并通过初始命令来自的同一通道发送回结果：返回码和API调用返回的指针。</p>
+<p>最后，lakeShm是一个内核模块，为lakeLib和LAKE驱动的应用提供内存分配。通过lakeShm的API分配的内存被优化用于在内核空间应用和用户空间lakeD之间的数据传输。lakeShm通过请求和映射来自Linux内核的一个大的连续内存区域来工作。当lakeD启动时，同一区域被映射到它的进程。虽然仍然需要主机到设备的传输，但这允许在内核空间模块和lakeD之间进行零拷贝内存移动。</p>
+<p>4.1 系统工作流程<br>当内核空间应用调用LAKE提供的API时，一系列机制被激活，直到最后由加速器处理。这个工作流程包括两个边界交叉：从内核到用户和从用户到内核空间。让我们考虑一个简单的应用，它在本地和GPU上分配内存，将本地数据复制到GPU，并调用一个内核在GPU上进行一些计算。我们研究的所有应用都执行这些步骤。</p>
+<p>我们将使用LAKE的应用可以执行的操作分类为三类：本地操作、API远程操作和可复制内存分配。</p>
+<p>本地操作：这些操作包括现有的内核函数和内核空间的内存分配。这样的操作不需要远程调用，也不会被LAKE修改。例如，常规的内存分配可以通过调用内核的内存分配器（例如vmalloc）来满足。</p>
+<p>API远程操作：LAKE通过lakeLib将加速器API提供给内核空间。当应用调用一个加速器API时，执行流程切换到lakeLib模块。创建一个足够大的命令缓冲区来容纳API函数标识符（例如，一个数字）和所有函数参数。然后，这个命令通过一个类似于套接字的通道发送给lakeD。一旦在用户空间，命令被反序列化，请求的API在加速器上执行。完成后，构建一个带有返回值的返回命令并发送回来。执行API时产生的错误被转发给应用，应用必须进行自己的错误检查。</p>
+<p>可复制内存分配：应用程序使用的将被复制到&#x2F;从加速器的内存区域，应该使用lakeShm分配，它提供了一个类似于malloc的函数。通过lakeShm分配的内存区域是共享的，避免了内核和用户空间之间的内存复制。使用lakeShm本身并不能产生内核空间应用和加速器之间的零拷贝数据传输。例如，CUDA API有一个用户空间API（cudaMallocHost），它提供了从用户空间到GPU的零拷贝传输，但LAKE不能集成这个特性，因为CUDA运行时库是闭源的。对于LAKE提供的自定义高级API（在§4.4中讨论），其中内核空间应用调用的API比在加速器上分配内存的级别要高，lakeShm移除了其领域下唯一的数据复制。如果应用程序不使用lakeShm也不使用减少数据传输的加速器特定API，API远程调用仍然会工作；这只会导致额外的数据复制。</p>
+<p>4.2 调节加速器使用<br>如我们在第7节中所示，使用加速器的盈利性并不总是有保证；加速器的大规模并行性只有在处理大量数据时才有优势。加速器在ML训练中几乎无处不在，因为它的批处理，但对于推理来说并非如此。对小批量输入的推理通常在CPU上更快。通常存在一个批量大小，在这个大小下，加速器会产生更好的性能（我们称之为交叉点）。</p>
+<p>为了给内核ML应用提供最佳性能，LAKE允许在CPU和加速器之间进行即时切换，粒度为函数调用。这是通过自定义执行策略完成的（在第4.3节给出了一个例子）。LAKE允许开发者使用eBPF[4]编写和安装这样的策略。通过回调，开发者可以指定考虑使用加速器盈利的必要条件。策略在应用的执行过程中由内核自动执行。图3显示了一个简单的CUDA设备策略的伪代码，该策略通过在批量大小低于某个阈值时回退到CPU来管理可变的盈利性。</p>
+<p>4.3 争用管理<br>我们不能假设LAKE提供的加速器将仅供内核使用。用户空间应用期望从加速器获得性能保证，我们不能容忍性能干扰。当加速器成为一个争用的资源时，内核空间应用必须减少或完全停止使用加速器，并回退到一个更简单、强度较小的加速器实现或CPU实现。</p>
+<p>用于调节加速器利用率的相同策略可以用于管理争用。策略的工具集包括任何操作系统或供应商提供的实用程序（例如，由LAKE支持的NVIDIA的NVML API），允许对系统当前状态的细粒度信息。图3显示了一个简单的CUDA设备争用策略的伪代码。该策略对GPU利用率的查询进行速率限制，并使用移动平均数来保持内核对GPU计算的消耗在一个阈值以下。开发者可以用两个回调函数来指定策略：dev_func回调通常包含一个或多个cuLaunchKernel调用，而cpu_func可以包含执行相同计算的替代API，但可能在CPU上操作或使用较少的加速器资源。</p>
+<p>4.4 高级API 现有的机器学习库（如 Tensorflow）的简单性，将复杂的机器学习功能抽象为高级API，使得应用程序不倾向于直接使用CUDA运行时API。虽然可能，但我们不能强迫开发者在CUDA中实现复杂且难以优化的算法。同时，将像Tensorflow这样的庞大库移植到内核是不切实际的；这些库依赖于用户空间专有的库，并且体积庞大。使内核能够使用机器学习是LAKE的主要目标之一，因此我们必须为应用程序提供使用高级库的机制。</p>
+<p>LAKE的API远程系统足够通用，可以支持手动添加API。这是必需的，以允许内核空间应用程序使用高级API，而无需将它们移植到内核空间。例如，我们的页面热度预测器（§ 7.2）基于Kleio，它使用Tensorflow构建了一个包含两个LSTM层的模型。虽然构建模型并不困难，但使用CUDA运行时直接实现快速、高效和正确的LSTM推理却是。向内核空间提供高级API需要两件事：在lakeLib中添加函数的原型，并在lakeD中实现其功能。手动添加API需要开发者设计从内核中的原始数据到库期望的数据的转换。例如，如果NumPy数组被用作TensorFlow的输入，这在内核中是不可用的，数据必须以某种格式（例如，数字数组）发送并在lakeD中转换。LAKE提供了内核和用户空间之间的自动数据序列化。<br>API Description<br>create_registry(name, sys, schema, window) Creates feature registry with capacity<br>destroy_registry(name, sys) Destroys a feature registry<br>create_model(name, sys, path) Create a new ML model, saved at path<br>update_model(name, sys, path) Commit a changed model to the file system<br>load_model(name, sys, path) Load a model from path into memory<br>delete_model(name, sys, path) Delete a model from the file system and memory<br>register_classifier(name, sys, fn, arch) Provide a function pointer for classifiers&#x2F;inference<br>Note: arch specifies CPU &#x2F; GPU &#x2F; XPU<br>register_policy(name, sys, fn) Provide an eBPF policy for contention&#x2F;batching (§4.3)<br>score_features(name, sys, fvs, num) Run inference on a batch, return batch results<br>get_features(name, sys, ts) Batch retrieves all feature vectors older than ts<br>begin_fv_capture(name, sys, ts) Starts the creation of a new feature vector.<br>Subsequent calls to capture_feature for name&#x2F;subsystem<br>will add&#x2F;overwrite the current value of that feature<br>capture_feature(name, sys, key, val, sz) Sets feature with key, val on the current vector<br>capture_feature_incr(name, sys, key, incrval, sz) Update a feature with key by incrementing<br>commit_fv_capture(name, sys, ts) Commits the current feature vector to the registry.<br>truncate_features(name, sys, ts) Removes all feature vectors older than ts</p>
+<p>5 内核特性注册表<br>LAKE支持内核特性注册表，用于管理机器学习模型和特性向量捕获，其API显示在表1中。API的设计目标是：1)最小化机器学习相关功能的性能影响，2)在抽象和模块边界存在的情况下，启用简单、可能异步的特性向量捕获，并预见多线程代码的需求（例如，需要在持有锁或在中断上下文中查询相关的数据结构吗？）以及3)简化对特性向量批次进行推理的任务。一般来说，API提供了一些函数，用于管理注册表（与内核子系统关联的模型的命名组合，附带特性向量模式）、管理机器学习模型、捕获特性和调用分类器&#x2F;推理。</p>
+<p>5.1 针对性能的设计<br>API通过在内核中操作并使用精心设计的数据结构和API设计来实现第一个目标（最小开销）。机器学习模型被提交到文件系统，并在启动时加载到内存中。加载和更新是不频繁的，所以文件系统开销是可以接受的，但在推理时，将模型放在内存中对性能至关重要。特性向量存储在内存中的一个循环缓冲区中，大小根据指定的窗口参数进行设置，一般格式为&lt;numfeatures, kvpair*, ts_begin, ts_end&gt;。kvpair*是一个从特性键到由无锁哈希表支持的值的键值映射。我们考虑在用户空间支持特性注册表，以避免在内核中引入敏感代码，但最终决定，为了捕获特性和访问推理模型，内核交叉会在关键路径上带来过多的开销。</p>
+<p>5.2 模式<br>每个注册表都有一个模式，描述了特性向量的格式：具体来说，模式是从特性键（名称）到&lt;size, entries&gt;元组的映射，其中size是特性类型所需的字节数（例如，int需要4字节），entries为包含历史值的特性向量提供数组支持。LAKE避免跟踪特性向量条目的实际值类型，而是提供必要的容量并将值视为无类型的字节。对于大多数特性类型，例如整数值，entries为1，意味着向量包含一个单一的标量值。当entries大于1时，特性是一个长度为entries的数组，其中索引0处的条目是最近的样本，索引1..(N−1)处的条目是最后N−1个特性向量的历史样本。我们发现，包含特定值的最后N次测量的特性足够常见，以至于在API级别提供对这种习语的支持是一种值得的简化。这种习语的一个例子在下面的案例研究中有所说明（§5.5）。</p>
+<p>5.3 异步和模块边界<br>为了理解上述的设计目标2，考虑到同步特性捕获（在调用推理之前查询相关数据结构）可能是不切实际的，因为模块边界和锁定规则可能使访问广泛分散的数据变得不切实际。LAKE通过一个异步API来解决这个问题，该API允许程序员在已经维护了被测量数据的代码站点放置简单的调用，随着时间的推移构建特性向量。注册表依赖于无锁数据结构，以便在任意内核线程上启用测量调用，而不需要额外的锁定规则。API支持一种习语，即特性捕获打开（调用begin_fv_capture()）：当特性捕获打开时，可以在任何线程上使用capture_feature()捕获单个特性向量值，该函数更新特性映射（kvpair）中给定键的值。我们发现，对于内核开发者来说，有些情况通过支持特性值的增量更新（使用capture_feature_incr()）可以显著简化（参见下面的例子：§5.5）。创建一个新的特性向量会设置一个开始时间戳（ts_begin），而捕获通过提交来最终确定，这会设置一个结束时间戳（ts_end）。</p>
+<p>5.4 简化批处理管理<br>因为机器学习的性能-准确性的盈利能力是可变的，我们发现，对批处理大小的明确控制是暴露给内核开发者的一个关键参数，以调节加速器的使用。使用时间戳ts查询注册表（get_features()）会返回第一个满足ts_begin &lt;&#x3D; ts &lt;&#x3D; ts_end的特性向量。使用空时间戳查询会返回包含循环缓冲区中所有特性的批处理。API可以通过调用truncate_features()来确认消费了该批处理。当注册表的模式具有依赖于历史样本的特性（上述entries &gt; 1），LAKE将始终在截断时保留最近的特性向量，以便系统正确地填充那些特性值。score_features() API调用程序员定义的回调（用register_classifier()指定）来运行推理。由框架调用的策略函数（用register_policy()指定）用于管理加速器的使用。</p>
+<p>5.5 特性注册表案例研究<br>在具有并行和冗余存储（例如，RAID）的系统中预测I&#x2F;O延迟可以通过拒绝高延迟的I&#x2F;O并将相同的I&#x2F;O重新发给不同的设备来提高吞吐量。我们在§7中测量了这个工作负载，但在这里使用它来说明特性注册表API的使用。捕获与I&#x2F;O延迟相关的特性需要在I&#x2F;O的边界处插入代码，这些代码的位置与调用推理的位置不同，因此需要支持异步特性构造。在I&#x2F;O发出时调用推理，并根据包含挂起I&#x2F;O的数量和固定数量的先前I&#x2F;O的完成延迟的特性向量将系统分类为快或慢。</p>
+<p>捕获挂起I&#x2F;O的数量和I&#x2F;O的延迟需要开发者在I&#x2F;O发出和完成时插入代码。清单4显示了添加到generic_make_request_checks函数的伪代码，该函数在I&#x2F;O发出时被调用，以便捕获系统的当前状态作为一个特性向量。我们存储了这个I&#x2F;O发出的时间（需要计算延迟），增加了当前特性向量中的挂起I&#x2F;O的数量，并提交了当前状态作为一个特性向量。然后，如果预定义的时间量子已经过去或者我们达到了期望的批处理大小，我们从注册表中检索一批处理，执行批处理推理，根据每个I&#x2F;O的结果采取行动，并清除特性注册表环。特性也必须在I&#x2F;O完成时被捕获。清单5显示了添加到bio_endio函数的伪代码，该函数计算当前I&#x2F;O完成所需的时间，将挂起的I&#x2F;O数量减少一个，并更新当前的特性向量。</p>
+<p>延迟预测在特性构造中具有明显的异步性，特性值可以方便地在不同的线程上捕获。I&#x2F;O可以由内核并发处理，手动的状态管理和特性向量的构造需要仔细的并发控制。LAKE的特性注册表简化了这些问题。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span> <span class="comment">// 在Linux中发出块I/O时调用</span></span><br><span class="line"><span class="number">2</span> generic_make_request_checks ( <span class="keyword">struct</span> bio *bio )</span><br><span class="line"><span class="number">3</span> &#123;</span><br><span class="line"><span class="number">4</span> sys = <span class="string">&quot; bio_latency_prediction &quot;</span></span><br><span class="line"><span class="number">5</span> <span class="comment">// 存储这个I/O的开始时间</span></span><br><span class="line"><span class="number">6</span> getnstimeofday (&amp;( bio - &gt; io_start_ts ) ) ;</span><br><span class="line"><span class="number">7</span> <span class="comment">// 在这个设备上增加挂起的I/Os</span></span><br><span class="line"><span class="number">8</span> capture_feature_incr ( dev , sys ,<span class="string">&quot; pend_ios &quot;</span> ,<span class="number">1</span>)</span><br><span class="line"><span class="number">9</span> <span class="comment">// 这个I/O变成一个特性向量</span></span><br><span class="line"><span class="number">10</span> commit_feature_capture ( dev , sys , now () )</span><br><span class="line"><span class="number">11</span> <span class="keyword">if</span>( quantum passed or batch &gt; thresh ) &#123;</span><br><span class="line"><span class="number">12</span> <span class="comment">// 获取环中的所有特性向量</span></span><br><span class="line"><span class="number">13</span> fvs = get_features ( dev , sys , <span class="literal">NULL</span> )</span><br><span class="line"><span class="number">14</span> <span class="comment">// 对所有特性向量进行推理</span></span><br><span class="line"><span class="number">15</span> scores = score_features ( dev , sys , fvs ) ;</span><br><span class="line"><span class="number">16</span> <span class="comment">// 拒绝，重新发出或接受I/Os</span></span><br><span class="line"><span class="number">17</span> ...根据分数采取行动...</span><br><span class="line"><span class="number">18</span> <span class="comment">// 重置特性向量环</span></span><br><span class="line"><span class="number">19</span> truncate_features ( dev , sys , <span class="literal">NULL</span> )</span><br><span class="line"><span class="number">20</span> &#125;</span><br><span class="line"><span class="number">21</span> <span class="comment">// 开始新的特性</span></span><br><span class="line"><span class="number">22</span> begin_fv_capture ( dev , sys , now () )</span><br><span class="line"><span class="number">23</span> ...</span><br></pre></td></tr></table></figure>
+<p>图4：使用LAKE特性注册表进行I&#x2F;O延迟预测的I&#x2F;O发出代码的伪代码。每个块设备都需要自己的特性注册表（name参数是设备的名称，例如sda1）。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span> <span class="comment">// 调用函数以结束块I/O</span></span><br><span class="line"><span class="number">2</span> <span class="type">void</span> <span class="title function_">bio_endio</span> <span class="params">( <span class="keyword">struct</span> bio *bio )</span> &#123;</span><br><span class="line"><span class="number">3</span> sys = <span class="string">&quot; bio_latency_prediction &quot;</span></span><br><span class="line"><span class="number">4</span> <span class="comment">// 获取这个I/O的延迟</span></span><br><span class="line"><span class="number">5</span> lat = get_io_latency ( bio - &gt; io_start_ts ) ;</span><br><span class="line"><span class="number">6</span> <span class="comment">// 存储这个I/O的延迟</span></span><br><span class="line"><span class="number">7</span> capture_feature ( dev , sys , io_latencies , lat ) ;</span><br><span class="line"><span class="number">8</span> <span class="comment">// 在这个设备上减少一个挂起的I/O</span></span><br><span class="line"><span class="number">9</span> capture_feature_incr ( dev , sys , pend_ios , <span class="number">-1</span>)</span><br><span class="line"><span class="number">10</span> ...</span><br></pre></td></tr></table></figure>
+<p>图5：使用LAKE特性注册表进行I&#x2F;O延迟预测的I&#x2F;O完成代码的伪代码。</p>
+<p>6 实现<br>我们的LAKE原型基于Linux内核版本6.0。默认情况下，内核不支持机器学习算法所需的浮点运算。需要使用浮点数的代码区域必须用启用它的宏（kernel_fpu_begin和kernel_fpu_end）进行包装。</p>
+<p>LAKE的API远程系统为内核空间提供了CUDA驱动API版本11.0以及TensorFlow 2.4.0和Keras 2.2.5。</p>
+<p>LAKE的API远程系统的实现类似于一个RPC系统：lakeLib向内核导出符号（存根），lakeD是处理传入请求的用户空间进程。这两者之间发送的命令通过Netlink套接字进行传输，因为它们的延迟很低。较大的内存传输通过零拷贝共享内存机制完成。</p>
+<p>通信通道。LAKE需要高效的通信通道，因为应用程序可能对调用或延迟敏感。Linux提供了内核-用户通信的机制，如ioctl、系统调用、信号、上行调用、mmap和套接字。我们在表2中评估了这些替代方案，该表总结了从内核向用户空间发送门铃的调用时间和延迟。除mmap外，所有机制的延迟都相似，而设备读&#x2F;写和Netlink有额外的缓存或排队层。mmap方法最快，但会浪费CPU旋转，所以我们使用Netlink套接字。</p>
+<p>表2：从内核向用户发送门铃消息的平均调用时间和延迟。<br>信号 设备R&#x2F;W Netlink Mmap<br>调用时间（微秒） 56 6 11 6<br>延迟（微秒） 56 57 54 6</p>
+<p>映射内存。内核和用户空间之间的批量数据传输是通过lakeShm完成的，lakeShm在加载时通过dma_alloc_coherent预留了一个连续的DMA区域。使用了基于最佳适应的内存分配器算法。使用映射内存可以避免在内核-用户边界上传输大的数据缓冲区。图6显示了不同大小的消息的往返传输成本。传输较大的消息会导致大的开销，这可以通过lakeShm来消除。</p>
+<p>6.1 讨论：安全性影响<br>LAKE引入了一个用户空间组件，将内核的私有数据通过用户空间移动，以便将加速器暴露给用户空间。在LAKE中，用户空间守护进程是一个受信任的进程，它以root身份运行，类似于任何其他与内核紧密集成的用户空间守护进程（例如，典型的微内核、用户模式设备驱动程序的用户空间内存管理器、调度器和文件系统，这些在现代操作系统如Windows中很常见）。地址空间分离提供了强大的安全保证，防止数据泄露，尽管守护进程并未在内核模式下执行。尽管如此，为了获得额外的保证，用户空间守护进程（lakeD）可以被沙箱化，并可以使用seccomp。lakeD守护进程与操作系统的接口相当有限（它需要ioctl和mmap用于lakeShm，netlink套接字用于lakeLib，以及由CUDA运行时完成的系统调用）。虽然我们在这项工作中并未考虑侧通道，但lakeD可以扩展以使用像Graviton[79]或Telekine[35]这样的安全GPU TEE。</p>
+<p>6.2 源代码<br>总的来说，lakeLib、lakeShm（都是内核空间代码）和lakeD（用户空间代码）分别由大约817、826和1072行的C&#x2F;C++代码组成，另外还有769行的代码用于核心公共功能。我们用于预测I&#x2F;O延迟的神经网络及其工具包含大约4157行代码。其他工作负载和修改过的eCryptfs分别包含1400和2925行代码。LAKE是在GPLv3下的开源项目，可以在GitHub上的utcs-scea&#x2F;LAKE找到。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://worstkid92.github.io/papers.github.io/2023/12/20/Towards-a-Machine-Learning-Assisted-Kernel-with-LAKE/" data-id="clqk8x1930000akva9x9d5rq2" data-title="Towards a Machine Learning-Assisted Kernel with LAKE" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/papers.github.io/2023/12/21/reading-list/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          reading list
+        
+      </div>
+    </a>
+  
+  
+    <a href="/papers.github.io/2023/12/08/Toward-Reconfigurable-Kernel-Datapaths-with-Learned-Optimizations/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Toward Reconfigurable Kernel Datapaths with Learned Optimizations</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/papers.github.io/tags/FPGA/" rel="tag">FPGA</a></li><li class="tag-list-item"><a class="tag-list-link" href="/papers.github.io/tags/libos-security/" rel="tag">libos,security</a></li><li class="tag-list-item"><a class="tag-list-link" href="/papers.github.io/tags/unikraft-security/" rel="tag">unikraft,security</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/papers.github.io/tags/FPGA/" style="font-size: 10px;">FPGA</a> <a href="/papers.github.io/tags/libos-security/" style="font-size: 10px;">libos,security</a> <a href="/papers.github.io/tags/unikraft-security/" style="font-size: 10px;">unikraft,security</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/papers.github.io/archives/2023/12/">December 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/papers.github.io/archives/2023/11/">November 2023</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/papers.github.io/2023/12/21/reading-list/">reading list</a>
+          </li>
+        
+          <li>
+            <a href="/papers.github.io/2023/12/20/Towards-a-Machine-Learning-Assisted-Kernel-with-LAKE/">Towards a Machine Learning-Assisted Kernel with LAKE</a>
+          </li>
+        
+          <li>
+            <a href="/papers.github.io/2023/12/08/Toward-Reconfigurable-Kernel-Datapaths-with-Learned-Optimizations/">Toward Reconfigurable Kernel Datapaths with Learned Optimizations</a>
+          </li>
+        
+          <li>
+            <a href="/papers.github.io/2023/12/06/learned-operating-system/">learned operating system</a>
+          </li>
+        
+          <li>
+            <a href="/papers.github.io/2023/12/05/DoOSAbstractionsMakeSenseOnFPGA/">OSDI20:Do OS Abstractions Make Sense On FPGA</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2023 John Doe<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/papers.github.io/" class="mobile-nav-link">Home</a>
+  
+    <a href="/papers.github.io/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/papers.github.io/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/papers.github.io/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/papers.github.io/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>

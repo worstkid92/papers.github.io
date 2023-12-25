@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>Toward Reconfigurable Kernel Datapaths with Learned Optimizations | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="Abstract作者提出了一种使内核能够自我优化的架构。在这种架构中，优化是通过使用机器学习（ML）从经验数据中计算出来的，并通过内核虚拟机以安全和系统化的方式集成到内核中。这个虚拟机实现了可重新配置的匹配表（RMT）抽象，其中表格被安装到内核中，当性能关键事件发生时，匹配查找当前的执行上下文，动作编码由ML计算出的上下文特定优化，这可能会因应用程序而异。他们设想的架构将支持离线和在线学习算法，以">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Toward Reconfigurable Kernel Datapaths with Learned Optimizations">
+<meta property="og:url" content="https://worstkid92.github.io/papers.github.io/2023/12/08/Toward-Reconfigurable-Kernel-Datapaths-with-Learned-Optimizations/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Abstract作者提出了一种使内核能够自我优化的架构。在这种架构中，优化是通过使用机器学习（ML）从经验数据中计算出来的，并通过内核虚拟机以安全和系统化的方式集成到内核中。这个虚拟机实现了可重新配置的匹配表（RMT）抽象，其中表格被安装到内核中，当性能关键事件发生时，匹配查找当前的执行上下文，动作编码由ML计算出的上下文特定优化，这可能会因应用程序而异。他们设想的架构将支持离线和在线学习算法，以">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2023-12-08T06:34:10.000Z">
+<meta property="article:modified_time" content="2023-12-18T00:54:40.670Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/papers.github.io/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/papers.github.io/favicon.png">
+  
+  
+  
+<link rel="stylesheet" href="/papers.github.io/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/papers.github.io/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<meta name="generator" content="Hexo 7.0.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/papers.github.io/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/papers.github.io/">Home</a>
+        
+          <a class="main-nav-link" href="/papers.github.io/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/papers.github.io/atom.xml" title="RSS Feed"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="Search"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://worstkid92.github.io/papers.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-Toward-Reconfigurable-Kernel-Datapaths-with-Learned-Optimizations" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/papers.github.io/2023/12/08/Toward-Reconfigurable-Kernel-Datapaths-with-Learned-Optimizations/" class="article-date">
+  <time class="dt-published" datetime="2023-12-08T06:34:10.000Z" itemprop="datePublished">2023-12-08</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      Toward Reconfigurable Kernel Datapaths with Learned Optimizations
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h1 id="Abstract"><a href="#Abstract" class="headerlink" title="Abstract"></a>Abstract</h1><p>作者提出了一种使内核能够自我优化的架构。在这种架构中，优化是通过使用机器学习（ML）从经验数据中计算出来的，并通过内核虚拟机以安全和系统化的方式集成到内核中。这个虚拟机实现了可重新配置的匹配表（RMT）抽象，其中表格被安装到内核中，当性能关键事件发生时，匹配查找当前的执行上下文，动作编码由ML计算出的上下文特定优化，这可能会因应用程序而异。他们设想的架构将支持离线和在线学习算法，以及各种内核子系统。RMT验证器将在将RMT程序接纳到内核之前检查程序的良好形式和模型效率。一个被接纳的程序可以被解释为字节码或即时编译以优化内核数据路径。</p>
+<h1 id="1Inteoduction"><a href="#1Inteoduction" class="headerlink" title="1Inteoduction"></a>1Inteoduction</h1><p>操作系统内核正面临来自上下的压力。作为通用资源管理器，操作系统内核需要支持不同的应用，并需要在不同类型的硬件平台上进行多路复用。近来，应用和硬件平台都在快速多样化。<br>例如，在应用方面，容器或微服务工作负载对延迟敏感，而类似MapReduce的数据处理任务则以IO密集型（例如，用于批量同步、检查点或恢复）的吞吐量为导向。家庭用户应用程序（例如，文档或照片编辑软件）是另一类，具有自己复杂的磁盘IO模式和与云的频繁交互。这种复杂性确保了不存在一种适合所有场景的优化策略。<br>同样，硬件技术的发展速度超过了软件系统栈，每一代的特性都有所不同，甚至每一代内部，不同供应商的产品也有所不同。对硬盘最好的IO调度算法对SSD和密度优化的覆盖磁盘来说肯定会表现不佳。更进一步复杂化的是，设备正在变得更智能，封装了运行专有算法的嵌入式控制器进行本地管理。在设备中运行这些无法控制的黑箱代码可能会混淆甚至最优化的内核优化。<br>这两种趋势的汇合要求我们从根本上重新思考操作系统内核应如何为特定场景专门化以提高性能，以及这些专门化如何推广到可能出现的未见过的场景。最近的两种方法可以被视为接近这个目标。内核绕过方法认为资源管理最好留给应用程序。用户态应用程序被直接访问网络卡或磁盘（例如，使用DPDK&#x2F;SPDK），并根据需要实现自己的优化。另外，eBPF允许应用程序动态地将受限的代码注入到内核中进行定制，以达到类似的效果。<br>然而，这两种方法都没有回答在什么时候应该实施什么优化的问题。应用程序可能没有足够的知识来充分地实现好的优化，任何改变可能会被新的硬件所无效。当各个应用程序选择自己的策略时，内核也失去了进行跨应用程序优化所需的集中视图。<br>我们的愿景：可重新配置的内核数据路径。在这篇论文中，我们主张一种根本不同的方法，并提供了一个答案，这个答案从两个最近的工作中得到启发——越来越强大的机器学习（ML）技术，以及使用可重新配置的匹配表（RMT）专门化网络堆栈的努力。我们的关键思想是开发可重新配置的内核数据路径，其中的机制基于内核中的RMT风格的架构，策略是使用ML学习的。操作系统内核动态地以RMT程序的形式发现每个场景的最佳策略，并通过配置内核虚拟机来执行这些策略。通过将这种可编程但轻量级的原语转化为操作系统内核，我们提供了一种允许各种类型适应性的架构。通过利用ML的力量，我们可以消除今天的内核数据路径中大量的最佳努力启发式方法，并使优化能够推广到未见过的应用、工作负载或硬件平台。<br>在20世纪90年代，应用特定的内核优化和扩展得到了深入的研究。Exokernel主张完全消除操作系统抽象，并将其实现留给应用程序。另一方面，SPIN允许应用程序将安全代码注入到内核中进行动态扩展。他们与内核绕过和eBPF注入的现代等价物有类似的限制。相比之下，我们的想法的一个关键目标是通过基于ML的重新配置自动识别内核优化，因此应用程序不再需要以一次性的方式专门化内核。<br>研究挑战。实现我们的可重新配置内核数据路径的愿景需要应对一系列挑战：将RMT风格的虚拟机架构到内核中，开发轻量级的内核学习算法，以及将架构应用到关键的内核子系统（例如，调度、内存管理、文件系统、网络）。我们希望在减少操作系统税收方面取得显著的进展：据报道，内核执行占据了数据中心CPU周期的20%，而数据中心代表了全球电力消耗的1%。因此，提高操作系统内核的效率对于广泛的部署场景具有重要的意义。</p>
+<h1 id="2Motivation"><a href="#2Motivation" class="headerlink" title="2Motivation"></a>2Motivation</h1><p>机器学习技术在计算机系统中取得了早期但成功的结果，取代了用于数据检索的精心调整的索引结构，预测硬件设备状态以实现更好的管理，以及有效地管理C++对象内存。张和黄认为，机器学习应该应用到操作系统内核中。我们的想法受到了这项工作的启发，它提出了一种系统化的方法，通过RMT虚拟机将机器学习集成到内核中。</p>
+<h2 id="2-1-预期的好处"><a href="#2-1-预期的好处" class="headerlink" title="2.1 预期的好处"></a>2.1 预期的好处</h2><p> 我们相信，可重配置的内核数据路径有可能释放出四类在今天的操作系统内核中难以实现的好处。</p>
+<h3 id="1-精简监控："><a href="#1-精简监控：" class="headerlink" title="1. 精简监控："></a>1. 精简监控：</h3><p>操作系统内核使用了大量的运行时监控器，目的是描述当前的工作负载并激活不同的内置启发式算法。然而，这些监控事件引入了缓存污染、运行时开销，而且在某些情况下，它们通过故意引起一些性能下降来工作。后者的一个例子是在NUMA机器上的CPU调度器——为了检测内存亲和性，调度器需要监控线程的页面级访问模式；Linux通过周期性地取消映射进程的页面来做到这一点，这样内核就可以捕获页面错误并监控访问位置。通过引入机器学习，我们可能可以使内核减少必要的监控。例如，使用特征重要性排名[33]的特征选择过程可能允许内核放弃监控那些提供的信息很少的事件。 </p>
+<h3 id="2-更好的配置："><a href="#2-更好的配置：" class="headerlink" title="2. 更好的配置："></a>2. 更好的配置：</h3><p>操作系统内核中的启发式算法和配置参数的广泛范围可能并不是最优的；调整内核参数以实现更好的配置也是一项具有挑战性的任务。此外，启发式算法只有在引导阶段之后才会被激活（例如，这个特定的线程是I&#x2F;O绑定的吗？那么就提高它的调度优先级）。在我们的设计中，机器学习算法应该能够探索更广泛的决策策略，从而得到更好的配置参数、明智的策略和更高的性能。如果操作系统内核可以预测应用程序的行为，那么引导阶段可能会被缩短甚至消除，只要应用程序启动，就激活一个合适的配置。配置参数和策略也可以在应用程序运行时进行调整，而不是静态地配置到内核中。</p>
+<h3 id="3-泛化："><a href="#3-泛化：" class="headerlink" title="3. 泛化："></a>3. 泛化：</h3><p>机器学习的另一个强大特性是它能够对某些任务的未见过的数据点进行泛化[38]。用机器学习模型替换内核中手工制作的、特定的启发式算法可能会导致更稳健的决策。在今天的内核中，展示新行为的应用程序，这些行为没有被现有的启发式算法捕获，通常会有不透明和不可预测的性能。这些性能悬崖只能通过广泛的、通常是针对特定应用的基准测试，由内核开发社区在一段时间内慢慢地捕获和修复。 </p>
+<h3 id="4-跨应用优化："><a href="#4-跨应用优化：" class="headerlink" title="4. 跨应用优化："></a>4. 跨应用优化：</h3><p>此外，我们的愿景使内核能够学习多个应用程序的行为，它们之间的关系，以及联合优化的机会。这些跨应用的优化将导致更好的系统范围的资源分配。例如，监控可能会检测到任务表现出生产者-消费者行为，并激活优化以实现有效的通信。 当然，机器学习并不是灵丹妙药——一般来说，需要谨慎地将正确的学习技术与正确的问题相匹配[38]。同样的原则也应该适用于操作系统内核：机器学习的有效性将自然地根据手头的任务而变化，在某些情况下，精心调整的启发式算法可能已经走得很远。我们的立场是，机器学习技术在操作系统内核的背景下具有重大的前景，这篇论文是对更彻底的调查的号召。</p>
+<h2 id="2-2-为什么选择RMT？"><a href="#2-2-为什么选择RMT？" class="headerlink" title="2.2 为什么选择RMT？"></a>2.2 为什么选择RMT？</h2><p>为了利用机器学习，我们需要一个适合将其集成到内核的架构。这样的架构必须满足一系列的属性：<br>• 足够通用：我们需要一个通用的架构，可以表示不同类型的重配置需求，适用于各种内核组件，也适用于学习的不同阶段（例如，数据收集、训练和推理）。<br>• 受限的：重配置的形式必须受限，以便人们可以轻松地推理和验证配置的正确性，然后再将其安装到内核中。<br>• 轻量级的：它应该能够以小的运行时开销实现高效的重配置。理想情况下，它应该是硬件友好的，以便可以将其合理地集成到CPU架构中，就像页面表遍历器已经被标准化到硬件中一样。<br>我们提出的答案是基于可重配置匹配表（RMT），这是网络社区中的一项最近的发展，专门用于专门化网络数据平面。一个RMT程序由一系列可重配置表的管道组成，其中进行专门的数据包处理。表的执行执行匹配，检查一个或多个数据包头字段，并触发基于匹配结果激活不同处理的动作。RMT编程模型受限，但对于广泛的重配置场景来说足够通用，并且已经被证明在高速（Tbps）下是可行的。这些属性使RMT成为内核重配置的有吸引力的候选者，其中存在类比：表是决策点（例如，预取），匹配检查当前的执行环境（例如，过去的访问模式），动作咨询一个机器学习模型（例如，预测要预取的下一组页面）。</p>
+<h1 id="3-可重配置内核数据路径"><a href="#3-可重配置内核数据路径" class="headerlink" title="3 可重配置内核数据路径"></a>3 可重配置内核数据路径</h1><p>在这一部分，我们描述我们的设计，它的研究挑战，以及暂定的解决方案。</p>
+<h2 id="3-1-内核中的RMT虚拟机"><a href="#3-1-内核中的RMT虚拟机" class="headerlink" title="3.1 内核中的RMT虚拟机"></a>3.1 内核中的RMT虚拟机</h2><p>一个RMT程序是由机器学习从过去或当前的运行中产生的，并且它是从用户空间注入到内核的。该程序在虚拟机中以解释模式运行，或者它是即时（JIT）编译为机器代码以提高效率。许多机制类似于eBPF [49]，但RMT程序与eBPF的形式不同，因为它们是为机器学习定制的。</p>
+<h3 id="RMT程序。"><a href="#RMT程序。" class="headerlink" title="RMT程序。"></a>RMT程序。</h3><p>RMT程序的关键构建块是匹配&#x2F;动作表的管道。每个表代表一个内核挂钩点，可能会触发关于当前执行的数据收集，拦截性能关键的内核事件，或者根据执行上下文咨询机器学习模型。一个RMT程序可以用受限的C或特定领域的语言编写，并编译成机器无关的字节码，通过系统调用安装。程序验证器检查良好的形式和有界的执行，并阻止任意的内核调用或数据修改。RMT字节码可以进一步被即时编译直接为机器代码以提高效率。在运行时，一个RMT程序可以访问一组受限的内核函数，这些函数专门用于学习和推理。它还可以访问存储执行上下文、历史数据和机器学习模型本身的内核内存。</p>
+<h3 id="表格"><a href="#表格" class="headerlink" title="表格"></a>表格</h3><p>每个表格代表内核数据路径中的一个关键决策点，即内核执行和适应性的关键路径。表格的数量、决策的类型以及安装这些表格的位置都是可配置的。例如，rmt_table page_patterns 可能会插入到内存子系统的 lookup_swap_cache 函数中，以收集交换区域的页面访问模式的数据；稍后，rmt_table page_prefetch 被插入到 swap_cluster_readahead 函数中，以预测下一组要预取的页面。每个表格都包含一组匹配&#x2F;动作条目，这些条目可以在 RMT 程序中静态编码，也可以在运行时通过 API 动态插入或删除。</p>
+<h3 id="匹配-动作条目"><a href="#匹配-动作条目" class="headerlink" title="匹配&#x2F;动作条目"></a>匹配&#x2F;动作条目</h3><p>每个条目代表一个决策控制流。例如，为了收集每个文件的访问模式，当文件被打开时会插入新的条目。另一组条目可能会监视每个应用程序的模式，当应用程序被创建时会插入条目。条目的匹配字段控制模式匹配方法，例如，对于每个文件的条目，使用 inode 数字，对于每个应用程序的条目，使用 PID。条目也可能是聚合的，例如，每个子目录或 cgroup。我们称这些匹配字段为“执行上下文”，这些信息被组织在键&#x2F;值映射的 RMT_CTXT 类型中，并可以使用匹配键检索。本质上，执行上下文类似于今天的内核监控数据，但是模式匹配剥离了不必要的监控，只保留了对决策至关重要的监控。这也是在系统范围内的常数时间，无需遍历复杂的内核数据结构。在底层，表格匹配被编译成 RMT 字节码指令，如内存访问（例如，RMT_LD_CTXT）和计算指令（例如，RMT_MATCH_CTXT）。动作可能会修改执行上下文（例如，追加到访问模式历史）使用像 RMT_ST_CTXT 这样的指令，或者它可能会使用 CALL 指令调用 ML 模型。</p>
+<h3 id="更新-RMT-条目"><a href="#更新-RMT-条目" class="headerlink" title="更新 RMT 条目"></a>更新 RMT 条目</h3><p>RMT 数据路径代表决策点，但其策略是通过控制平面 API 重新配置的。此 API 支持添加、删除、修改匹配&#x2F;动作条目和 ML 模型。例如，ML 训练组件可能会定期更新表格条目以反映最新的监控数据，例如，为新启动的应用程序添加额外的表格条目。或者，控制平面依赖过去的预测准确性来检测工作负载变化并调整表格条目。例如，如果预取的准确性低于阈值，控制平面将重新计算 ML 决策以在预取时更保守，并重新配置 RMT 表格以反映工作负载变化。</p>
+<h3 id="RMT-数据结构"><a href="#RMT-数据结构" class="headerlink" title="RMT 数据结构"></a>RMT 数据结构</h3><p>虚拟机还提供了一组额外的数据结构用于内核 ML。这包括用于监控目的的数据结构（例如，类似于不同类型的 eBPF 地图），以及用于训练和推理的数据结构（例如，决策树，NN）。将添加标准接口到这些数据结构，使它们可以被不同的内核子系统以及用户空间访问。</p>
+<h2 id="3-2-内核中的轻量级-ML"><a href="#3-2-内核中的轻量级-ML" class="headerlink" title="3.2 内核中的轻量级 ML"></a>3.2 内核中的轻量级 ML</h2><p>如上所述，ML 数据结构（例如，conv_layer）和辅助函数（例如，matrix_multiply）的库可以帮助 RMT 程序构建更复杂的 ML 模型（例如，action_cnn）。这些动作也是从 RMT 表格中触发的，并且被编译成具有专用 ML 指令集（例如，RMT_VECTOR_LD，RMT_MAT_MUL，RMT_SCALAR_VAL）的 RMT 字节码，这种指令集是根据神经处理器的硬件 ISA 模式化的。可以将模型添加到这个库中，但是它们必须满足一组性能要求（例如，NN 层的数量，内存访问，或浮点运算）。RMT 验证器将静态检查模型，例如，通过计算输入特征图的高度、宽度和通道数的卷积层的浮点运算数，然后将其 JIT 编译为机器代码。在计算预测结果（例如，要预取的页面数）后，基于 ML 的动作将退出 RMT 管道并进入常规内核执行。在需要时，模型也可以使用 TAIL_CALL 进行级联。</p>
+<p>对于内核 ML 存在几个研究挑战。<br>ML 训练。我们的目标是在内核中支持离线和在线、实时训练。它们涉及到不同的挑战。离线训练可以以异步的方式进行，因此不会对内核工作负载产生额外的开销。然而，以在线方式进行实时训练可以更好地处理快速变化的工作负载和场景。实际上，实时学习是 ML 社区的一个最近的趋势，有许多未解决的问题和正在进行的研究工作。它在操作系统内核中的使用带来了更多的挑战，尤其是关于延迟的问题。例如，自动驾驶汽车的决策系统可能需要几毫秒，但是 CPU 调度的延迟要求在微秒级别。此外，离线训练可以在成熟的库和框架中进行，并且可以从 GPU 或 TPU 支持中受益。另一方面，操作系统内核内的在线训练可能需要使用浮点运算，这在内核执行中默认是禁用的。由于在内核中启用 FPU 会产生高开销，一个有前途的方法是依赖轻量级的学习模型，如基于整数的学习[^17^, ^23^, ^50^, ^51^]。作为另一种方法，ML 训练可以在用户空间中使用浮点运算实时进行，模型会定期被量化并推送到内核进行推理。</p>
+<p>ML 推理。与学习不同，ML 推理必须在关键执行路径中执行，因此必须非常高效。整体性能提升将取决于推理开销和预测准确性之间的权衡。有一种成熟的工作方法依赖于知识蒸馏，将大型的“教师”模型转化为大幅度缩小的“学生”模型，而不会牺牲太多的准确性（例如，更简单的 NN 或甚至决策树）。蒸馏到可解释的模型（如决策树）也将阐明哪些特征是决策的关键，有助于实现“精简监控”的目标。特征重要性排名算法也对理解特征的权重有用。已经证明，为推理量化预训练模型具有良好的性能。根据内核子系统的不同，推理可以在 CPU 上本地执行，或者在独立或高速缓存一致的 GPU 上执行，如果从 GPU 到 GPU 的往返时间对该子系统来说是可以接受的。如果训练在用户空间进行，模型可以定期更新、量化并安装到内核。在适当的情况下，推理结果可以被缓存并在内核子系统中重复使用，而不会产生重复的查询。此外，RMT 程序验证器应在将它们接纳到内核之前推理 ML 模型的效率[^3^, ^32^]。按需模型压缩技术也可以根据指定的性能目标和资源约束来修剪模型，例如，作为可以从 RMT 验证器调用的后续步骤。</p>
+<p>定制 ML。当现有的 ML 模型不能开箱即用时，我们还需要为每个子系统和任务确定定制的模型。在这个方向上，神经架构搜索（NAS）是一种给定某个数据样本时搜索适当的神经网络架构的方法。它可以使用 ML 构建块（例如，卷积层）为给定任务自动构建具有不同深度、宽度和超参数的 NN；这样的架构已经被证明在一系列任务上具有优越的性能[^15^, ^26^, ^34^, ^35^, ^46^, ^47^]。NAS 通常是一个耗时的操作，所以它在离线训练阶段进行。一旦确定并训练了一个好的神经网络架构，它就可以被安装到内核中进行推理。在不同的 RMT 表格中，将应用超参数优化技术来微调他们的模型，并使用元学习（或“学习学习”）技术来确定使用最佳的 ML 模型。作为 ML 定制的另一种形式，操作系统内核运行在各种硬件平台上（例如，不同的 ISA，独立的 vs. 高速缓存一致的 GPU，或专用的 ML 加速器）；我们应该根据底层平台调整或共同设计 ML 算法，并自动构建平台成本模型。</p>
+<h1 id="4-初步验证"><a href="#4-初步验证" class="headerlink" title="4 初步验证"></a>4 初步验证</h1><p>我们将展示我们目前的进展。我们已经开发了一个内核 RMT 原型，它在 Linux 内核 v5.9.15 的指定挂钩点上进行硬编码，并对页面预取和 CPU 调度进行了两个案例研究。</p>
+<p>案例研究 #1。Linux 页面预取器弥补了主内存和外部磁盘之间的速度差异。默认的 readahead 预取器检测顺序页面访问并预取下一组页面。最近的工作，Leap，已经扩展了这个功能，以便检测跨步模式。为了展示 ML 的优势，我们开发了一个内核整数决策树，可以捕获更复杂的访问模式。</p>
+<p>我们的 RMT 管道为每个进程收集页面访问跟踪，用于在线训练和推理。它在每个时间窗口的后台周期性地训练一个新的决策树，同时丢弃旧的决策树。在预取时，另一个 RMT 表格查询 ML 模型以预测要获取的下一组页面。图 1 使用 OpenCV 视频调整应用程序和 Numpy 矩阵卷积程序[^12^, ^45^]，比较了我们的基础设施与 Linux 以及 Leap 的性能。结果显示，与 Linux 相比，ML 模型的准确性提高了 28%-80%，与 Leap 相比，提高了 23%-44%，大大缩短了作业完成时间。</p>
+<p>案例研究 #2。Linux 完全公平调度器（CFS）周期性地将任务迁移到 CPU 以进行负载平衡，同时考虑一系列因素以避免性能退化。最近的一个项目显示，一个 MLP（多层感知器）ML 模型可以有效地模仿 Linux CFS 的决策。我们的下一个案例研究使用我们的基础设施来研究这个场景。</p>
+<p>CFS 中的 can_migrate_task 函数调用 RMT 来查询 ML 模型，以预测是否应该迁移一个任务。我们首先使用我们的基础设施复制了中的实验，用于卸载训练具有量化模型。使用 Blackscholes 和 PARSEC 基准套件中的其他模型，以及矩阵乘法和 Fibonacci 计算程序，我们的基础设施在模仿 Linux CFS 决策方面达到了 99% 的预测准确性，与相似。接下来，我们使用 scikit-learn 工具箱来排名和识别负载平衡的两个关键特征（在中使用的 15 个特征中）。有了这个更精简的监控，我们的原型仍然达到了 94+% 的准确性；在作业完成时间方面，它取得了有竞争力的结果。表 2 比较了 ML 与 Linux CFS 启发式方法的性能。</p>
+<h1 id="5-相关工作"><a href="#5-相关工作" class="headerlink" title="5 相关工作"></a>5 相关工作</h1><p>系统中的 ML。ML 已经在索引检索、布隆过滤器查询、CPU 调度、C++ 内存管理以及许多其他上下文中找到了应用。张和黄主张使用它来优化操作系统内核。DBOS 项目也提出建立一个数据中心的操作系统，其中的组件可以使用 ML 进行学习。我们的项目追求类似的目标，但它提出了一个具体的提案，基于 RMT 架构将 ML 集成到内核中。</p>
+<p>操作系统专用化。操作系统专用化[^9^, ^19^]一直是社区的长期目标，最近，eBPF 受到了欢迎。在 Hypercallbacks 和 Hyperupcalls 中，虚拟机使用 eBPF 向超级管理员注入不受信任的代码以进行策略执行。另一方面，LBM 将保护程序注入到内核中，以防御恶意外设。也已经为 eBPF 程序 和它们的 JIT 编译器开发了验证技术，以确保注入代码的高度保证。我们的想法受到了 eBPF 基础设施的启发，但 RMT 程序增强了专用的 ML 指令集和 ML 模型，它们的验证器需要检查更高级的属性，超出了有界执行，例如 ML 模型性能和隐私目标。</p>
+<h1 id="6-总结和未来工作"><a href="#6-总结和未来工作" class="headerlink" title="6 总结和未来工作"></a>6 总结和未来工作</h1><p>我们已经为一种基于 RMT 的新型可重配置内核数据路径架构进行了论证，该架构使操作系统内核中的机器学习变得高效，并提出了 RMT 程序设计、内核机器学习和程序安全检查的研究挑战。我们还展示了两个案例研究的一些初步结果。未来，还有很多工作要做。为不同的内核子系统定制 ML 技术，在 ML 开销和预测准确性之间找到一个好的平衡，何时以及如何调用像 GPU 这样的加速器，以及在内核中完全设计和实现 RMT，都是有趣的研究方向。总的来说，我们认为在内核中使用 ML 代表了设计空间中的一个有趣的点。类似于 SPIN 和 exokernel，这样的设计将考虑到应用程序的多样性和专用化的需要。然而，与其修改操作系统并允许应用程序控制策略决策，使用 ML 可能会导致更强大的内核策略，尽管应用程序存在差异。使用数据驱动的方法也有可能将内核优化放在比现在更坚实的基础上。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://worstkid92.github.io/papers.github.io/2023/12/08/Toward-Reconfigurable-Kernel-Datapaths-with-Learned-Optimizations/" data-id="clqk8x19o0002akvaaa0c5sxa" data-title="Toward Reconfigurable Kernel Datapaths with Learned Optimizations" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/papers.github.io/2023/12/20/Towards-a-Machine-Learning-Assisted-Kernel-with-LAKE/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Towards a Machine Learning-Assisted Kernel with LAKE
+        
+      </div>
+    </a>
+  
+  
+    <a href="/papers.github.io/2023/12/06/learned-operating-system/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">learned operating system</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/papers.github.io/tags/FPGA/" rel="tag">FPGA</a></li><li class="tag-list-item"><a class="tag-list-link" href="/papers.github.io/tags/libos-security/" rel="tag">libos,security</a></li><li class="tag-list-item"><a class="tag-list-link" href="/papers.github.io/tags/unikraft-security/" rel="tag">unikraft,security</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/papers.github.io/tags/FPGA/" style="font-size: 10px;">FPGA</a> <a href="/papers.github.io/tags/libos-security/" style="font-size: 10px;">libos,security</a> <a href="/papers.github.io/tags/unikraft-security/" style="font-size: 10px;">unikraft,security</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/papers.github.io/archives/2023/12/">December 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/papers.github.io/archives/2023/11/">November 2023</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/papers.github.io/2023/12/21/reading-list/">reading list</a>
+          </li>
+        
+          <li>
+            <a href="/papers.github.io/2023/12/20/Towards-a-Machine-Learning-Assisted-Kernel-with-LAKE/">Towards a Machine Learning-Assisted Kernel with LAKE</a>
+          </li>
+        
+          <li>
+            <a href="/papers.github.io/2023/12/08/Toward-Reconfigurable-Kernel-Datapaths-with-Learned-Optimizations/">Toward Reconfigurable Kernel Datapaths with Learned Optimizations</a>
+          </li>
+        
+          <li>
+            <a href="/papers.github.io/2023/12/06/learned-operating-system/">learned operating system</a>
+          </li>
+        
+          <li>
+            <a href="/papers.github.io/2023/12/05/DoOSAbstractionsMakeSenseOnFPGA/">OSDI20:Do OS Abstractions Make Sense On FPGA</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2023 John Doe<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/papers.github.io/" class="mobile-nav-link">Home</a>
+  
+    <a href="/papers.github.io/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/papers.github.io/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/papers.github.io/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/papers.github.io/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
