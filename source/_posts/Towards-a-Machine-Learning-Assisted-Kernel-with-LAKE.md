@@ -79,3 +79,112 @@ API远程操作：LAKE通过lakeLib将加速器API提供给内核空间。当应
 我们不能假设LAKE提供的加速器将仅供内核使用。用户空间应用期望从加速器获得性能保证，我们不能容忍性能干扰。当加速器成为一个争用的资源时，内核空间应用必须减少或完全停止使用加速器，并回退到一个更简单、强度较小的加速器实现或CPU实现。
 
 用于调节加速器利用率的相同策略可以用于管理争用。策略的工具集包括任何操作系统或供应商提供的实用程序（例如，由LAKE支持的NVIDIA的NVML API），允许对系统当前状态的细粒度信息。图3显示了一个简单的CUDA设备争用策略的伪代码。该策略对GPU利用率的查询进行速率限制，并使用移动平均数来保持内核对GPU计算的消耗在一个阈值以下。开发者可以用两个回调函数来指定策略：dev_func回调通常包含一个或多个cuLaunchKernel调用，而cpu_func可以包含执行相同计算的替代API，但可能在CPU上操作或使用较少的加速器资源。
+
+4.4 高级API 现有的机器学习库（如 Tensorflow）的简单性，将复杂的机器学习功能抽象为高级API，使得应用程序不倾向于直接使用CUDA运行时API。虽然可能，但我们不能强迫开发者在CUDA中实现复杂且难以优化的算法。同时，将像Tensorflow这样的庞大库移植到内核是不切实际的；这些库依赖于用户空间专有的库，并且体积庞大。使内核能够使用机器学习是LAKE的主要目标之一，因此我们必须为应用程序提供使用高级库的机制。
+
+LAKE的API远程系统足够通用，可以支持手动添加API。这是必需的，以允许内核空间应用程序使用高级API，而无需将它们移植到内核空间。例如，我们的页面热度预测器（§ 7.2）基于Kleio，它使用Tensorflow构建了一个包含两个LSTM层的模型。虽然构建模型并不困难，但使用CUDA运行时直接实现快速、高效和正确的LSTM推理却是。向内核空间提供高级API需要两件事：在lakeLib中添加函数的原型，并在lakeD中实现其功能。手动添加API需要开发者设计从内核中的原始数据到库期望的数据的转换。例如，如果NumPy数组被用作TensorFlow的输入，这在内核中是不可用的，数据必须以某种格式（例如，数字数组）发送并在lakeD中转换。LAKE提供了内核和用户空间之间的自动数据序列化。
+API Description
+create_registry(name, sys, schema, window) Creates feature registry with capacity
+destroy_registry(name, sys) Destroys a feature registry
+create_model(name, sys, path) Create a new ML model, saved at path
+update_model(name, sys, path) Commit a changed model to the file system
+load_model(name, sys, path) Load a model from path into memory
+delete_model(name, sys, path) Delete a model from the file system and memory
+register_classifier(name, sys, fn, arch) Provide a function pointer for classifiers/inference
+Note: arch specifies CPU / GPU / XPU
+register_policy(name, sys, fn) Provide an eBPF policy for contention/batching (§4.3)
+score_features(name, sys, fvs, num) Run inference on a batch, return batch results
+get_features(name, sys, ts) Batch retrieves all feature vectors older than ts
+begin_fv_capture(name, sys, ts) Starts the creation of a new feature vector.
+Subsequent calls to capture_feature for name/subsystem
+will add/overwrite the current value of that feature
+capture_feature(name, sys, key, val, sz) Sets feature with key, val on the current vector
+capture_feature_incr(name, sys, key, incrval, sz) Update a feature with key by incrementing
+commit_fv_capture(name, sys, ts) Commits the current feature vector to the registry.
+truncate_features(name, sys, ts) Removes all feature vectors older than ts
+
+5 内核特性注册表
+LAKE支持内核特性注册表，用于管理机器学习模型和特性向量捕获，其API显示在表1中。API的设计目标是：1)最小化机器学习相关功能的性能影响，2)在抽象和模块边界存在的情况下，启用简单、可能异步的特性向量捕获，并预见多线程代码的需求（例如，需要在持有锁或在中断上下文中查询相关的数据结构吗？）以及3)简化对特性向量批次进行推理的任务。一般来说，API提供了一些函数，用于管理注册表（与内核子系统关联的模型的命名组合，附带特性向量模式）、管理机器学习模型、捕获特性和调用分类器/推理。
+
+5.1 针对性能的设计
+API通过在内核中操作并使用精心设计的数据结构和API设计来实现第一个目标（最小开销）。机器学习模型被提交到文件系统，并在启动时加载到内存中。加载和更新是不频繁的，所以文件系统开销是可以接受的，但在推理时，将模型放在内存中对性能至关重要。特性向量存储在内存中的一个循环缓冲区中，大小根据指定的窗口参数进行设置，一般格式为<numfeatures, kvpair*, ts_begin, ts_end>。kvpair*是一个从特性键到由无锁哈希表支持的值的键值映射。我们考虑在用户空间支持特性注册表，以避免在内核中引入敏感代码，但最终决定，为了捕获特性和访问推理模型，内核交叉会在关键路径上带来过多的开销。
+
+5.2 模式
+每个注册表都有一个模式，描述了特性向量的格式：具体来说，模式是从特性键（名称）到<size, entries>元组的映射，其中size是特性类型所需的字节数（例如，int需要4字节），entries为包含历史值的特性向量提供数组支持。LAKE避免跟踪特性向量条目的实际值类型，而是提供必要的容量并将值视为无类型的字节。对于大多数特性类型，例如整数值，entries为1，意味着向量包含一个单一的标量值。当entries大于1时，特性是一个长度为entries的数组，其中索引0处的条目是最近的样本，索引1..(N−1)处的条目是最后N−1个特性向量的历史样本。我们发现，包含特定值的最后N次测量的特性足够常见，以至于在API级别提供对这种习语的支持是一种值得的简化。这种习语的一个例子在下面的案例研究中有所说明（§5.5）。
+
+5.3 异步和模块边界
+为了理解上述的设计目标2，考虑到同步特性捕获（在调用推理之前查询相关数据结构）可能是不切实际的，因为模块边界和锁定规则可能使访问广泛分散的数据变得不切实际。LAKE通过一个异步API来解决这个问题，该API允许程序员在已经维护了被测量数据的代码站点放置简单的调用，随着时间的推移构建特性向量。注册表依赖于无锁数据结构，以便在任意内核线程上启用测量调用，而不需要额外的锁定规则。API支持一种习语，即特性捕获打开（调用begin_fv_capture()）：当特性捕获打开时，可以在任何线程上使用capture_feature()捕获单个特性向量值，该函数更新特性映射（kvpair）中给定键的值。我们发现，对于内核开发者来说，有些情况通过支持特性值的增量更新（使用capture_feature_incr()）可以显著简化（参见下面的例子：§5.5）。创建一个新的特性向量会设置一个开始时间戳（ts_begin），而捕获通过提交来最终确定，这会设置一个结束时间戳（ts_end）。
+
+5.4 简化批处理管理
+因为机器学习的性能-准确性的盈利能力是可变的，我们发现，对批处理大小的明确控制是暴露给内核开发者的一个关键参数，以调节加速器的使用。使用时间戳ts查询注册表（get_features()）会返回第一个满足ts_begin <= ts <= ts_end的特性向量。使用空时间戳查询会返回包含循环缓冲区中所有特性的批处理。API可以通过调用truncate_features()来确认消费了该批处理。当注册表的模式具有依赖于历史样本的特性（上述entries > 1），LAKE将始终在截断时保留最近的特性向量，以便系统正确地填充那些特性值。score_features() API调用程序员定义的回调（用register_classifier()指定）来运行推理。由框架调用的策略函数（用register_policy()指定）用于管理加速器的使用。
+
+5.5 特性注册表案例研究
+在具有并行和冗余存储（例如，RAID）的系统中预测I/O延迟可以通过拒绝高延迟的I/O并将相同的I/O重新发给不同的设备来提高吞吐量。我们在§7中测量了这个工作负载，但在这里使用它来说明特性注册表API的使用。捕获与I/O延迟相关的特性需要在I/O的边界处插入代码，这些代码的位置与调用推理的位置不同，因此需要支持异步特性构造。在I/O发出时调用推理，并根据包含挂起I/O的数量和固定数量的先前I/O的完成延迟的特性向量将系统分类为快或慢。
+
+捕获挂起I/O的数量和I/O的延迟需要开发者在I/O发出和完成时插入代码。清单4显示了添加到generic_make_request_checks函数的伪代码，该函数在I/O发出时被调用，以便捕获系统的当前状态作为一个特性向量。我们存储了这个I/O发出的时间（需要计算延迟），增加了当前特性向量中的挂起I/O的数量，并提交了当前状态作为一个特性向量。然后，如果预定义的时间量子已经过去或者我们达到了期望的批处理大小，我们从注册表中检索一批处理，执行批处理推理，根据每个I/O的结果采取行动，并清除特性注册表环。特性也必须在I/O完成时被捕获。清单5显示了添加到bio_endio函数的伪代码，该函数计算当前I/O完成所需的时间，将挂起的I/O数量减少一个，并更新当前的特性向量。
+
+延迟预测在特性构造中具有明显的异步性，特性值可以方便地在不同的线程上捕获。I/O可以由内核并发处理，手动的状态管理和特性向量的构造需要仔细的并发控制。LAKE的特性注册表简化了这些问题。
+
+```c
+1 // 在Linux中发出块I/O时调用
+2 generic_make_request_checks ( struct bio *bio )
+3 {
+4 sys = " bio_latency_prediction "
+5 // 存储这个I/O的开始时间
+6 getnstimeofday (&( bio - > io_start_ts ) ) ;
+7 // 在这个设备上增加挂起的I/Os
+8 capture_feature_incr ( dev , sys ," pend_ios " ,1)
+9 // 这个I/O变成一个特性向量
+10 commit_feature_capture ( dev , sys , now () )
+11 if( quantum passed or batch > thresh ) {
+12 // 获取环中的所有特性向量
+13 fvs = get_features ( dev , sys , NULL )
+14 // 对所有特性向量进行推理
+15 scores = score_features ( dev , sys , fvs ) ;
+16 // 拒绝，重新发出或接受I/Os
+17 ...根据分数采取行动...
+18 // 重置特性向量环
+19 truncate_features ( dev , sys , NULL )
+20 }
+21 // 开始新的特性
+22 begin_fv_capture ( dev , sys , now () )
+23 ...
+```
+图4：使用LAKE特性注册表进行I/O延迟预测的I/O发出代码的伪代码。每个块设备都需要自己的特性注册表（name参数是设备的名称，例如sda1）。
+
+```c
+1 // 调用函数以结束块I/O
+2 void bio_endio ( struct bio *bio ) {
+3 sys = " bio_latency_prediction "
+4 // 获取这个I/O的延迟
+5 lat = get_io_latency ( bio - > io_start_ts ) ;
+6 // 存储这个I/O的延迟
+7 capture_feature ( dev , sys , io_latencies , lat ) ;
+8 // 在这个设备上减少一个挂起的I/O
+9 capture_feature_incr ( dev , sys , pend_ios , -1)
+10 ...
+```
+图5：使用LAKE特性注册表进行I/O延迟预测的I/O完成代码的伪代码。
+
+6 实现
+我们的LAKE原型基于Linux内核版本6.0。默认情况下，内核不支持机器学习算法所需的浮点运算。需要使用浮点数的代码区域必须用启用它的宏（kernel_fpu_begin和kernel_fpu_end）进行包装。
+
+LAKE的API远程系统为内核空间提供了CUDA驱动API版本11.0以及TensorFlow 2.4.0和Keras 2.2.5。
+
+LAKE的API远程系统的实现类似于一个RPC系统：lakeLib向内核导出符号（存根），lakeD是处理传入请求的用户空间进程。这两者之间发送的命令通过Netlink套接字进行传输，因为它们的延迟很低。较大的内存传输通过零拷贝共享内存机制完成。
+
+通信通道。LAKE需要高效的通信通道，因为应用程序可能对调用或延迟敏感。Linux提供了内核-用户通信的机制，如ioctl、系统调用、信号、上行调用、mmap和套接字。我们在表2中评估了这些替代方案，该表总结了从内核向用户空间发送门铃的调用时间和延迟。除mmap外，所有机制的延迟都相似，而设备读/写和Netlink有额外的缓存或排队层。mmap方法最快，但会浪费CPU旋转，所以我们使用Netlink套接字。
+
+表2：从内核向用户发送门铃消息的平均调用时间和延迟。
+信号 设备R/W Netlink Mmap
+调用时间（微秒） 56 6 11 6
+延迟（微秒） 56 57 54 6
+
+映射内存。内核和用户空间之间的批量数据传输是通过lakeShm完成的，lakeShm在加载时通过dma_alloc_coherent预留了一个连续的DMA区域。使用了基于最佳适应的内存分配器算法。使用映射内存可以避免在内核-用户边界上传输大的数据缓冲区。图6显示了不同大小的消息的往返传输成本。传输较大的消息会导致大的开销，这可以通过lakeShm来消除。
+
+6.1 讨论：安全性影响
+LAKE引入了一个用户空间组件，将内核的私有数据通过用户空间移动，以便将加速器暴露给用户空间。在LAKE中，用户空间守护进程是一个受信任的进程，它以root身份运行，类似于任何其他与内核紧密集成的用户空间守护进程（例如，典型的微内核、用户模式设备驱动程序的用户空间内存管理器、调度器和文件系统，这些在现代操作系统如Windows中很常见）。地址空间分离提供了强大的安全保证，防止数据泄露，尽管守护进程并未在内核模式下执行。尽管如此，为了获得额外的保证，用户空间守护进程（lakeD）可以被沙箱化，并可以使用seccomp。lakeD守护进程与操作系统的接口相当有限（它需要ioctl和mmap用于lakeShm，netlink套接字用于lakeLib，以及由CUDA运行时完成的系统调用）。虽然我们在这项工作中并未考虑侧通道，但lakeD可以扩展以使用像Graviton[79]或Telekine[35]这样的安全GPU TEE。
+
+6.2 源代码
+总的来说，lakeLib、lakeShm（都是内核空间代码）和lakeD（用户空间代码）分别由大约817、826和1072行的C/C++代码组成，另外还有769行的代码用于核心公共功能。我们用于预测I/O延迟的神经网络及其工具包含大约4157行代码。其他工作负载和修改过的eCryptfs分别包含1400和2925行代码。LAKE是在GPLv3下的开源项目，可以在GitHub上的utcs-scea/LAKE找到。
+
