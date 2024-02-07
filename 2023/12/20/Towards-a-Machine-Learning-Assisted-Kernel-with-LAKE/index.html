@@ -6,15 +6,15 @@
   
   <title>Towards a Machine Learning-Assisted Kernel with LAKE | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="Intro硬件的演变和多样化正在推动现代操作系统复杂性的爆炸性增长。CPU核心数量已经增长，新的内存技术如HBM和NVM以及像NUMA这样的组织已经变得司空见惯，新的网络和加速技术的出现，所有这些都对操作系统施加了压力，要求其进行高效的资源管理，以保持硬件的承诺。操作系统内核包含了用于管理这些资源的子系统，如内存管理器、I&#x2F;O和进程调度以及文件系统，目前依赖于启发式方法来处理对性能至关重">
+  <meta name="description" content="Abstract摘要现代操作系统（OS）的复杂性、硬件的快速多样化以及机器学习（ML）的稳步发展，促使我们探索 ML 在改进操作系统内核决策方面的潜力。我们猜想，ML 可以更好地管理内存管理、进程和 I&#x2F;O 调度等子系统的权衡空间，这些子系统目前依赖手工调整的启发式方法来提供合理的平均性能。我们探讨了在五个内核子系统中用人工智能驱动的决策取代启发式方法的问题，并考虑了对内核设计、共享操作">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Towards a Machine Learning-Assisted Kernel with LAKE">
 <meta property="og:url" content="https://worstkid92.github.io/papers.github.io/2023/12/20/Towards-a-Machine-Learning-Assisted-Kernel-with-LAKE/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="Intro硬件的演变和多样化正在推动现代操作系统复杂性的爆炸性增长。CPU核心数量已经增长，新的内存技术如HBM和NVM以及像NUMA这样的组织已经变得司空见惯，新的网络和加速技术的出现，所有这些都对操作系统施加了压力，要求其进行高效的资源管理，以保持硬件的承诺。操作系统内核包含了用于管理这些资源的子系统，如内存管理器、I&#x2F;O和进程调度以及文件系统，目前依赖于启发式方法来处理对性能至关重">
+<meta property="og:description" content="Abstract摘要现代操作系统（OS）的复杂性、硬件的快速多样化以及机器学习（ML）的稳步发展，促使我们探索 ML 在改进操作系统内核决策方面的潜力。我们猜想，ML 可以更好地管理内存管理、进程和 I&#x2F;O 调度等子系统的权衡空间，这些子系统目前依赖手工调整的启发式方法来提供合理的平均性能。我们探讨了在五个内核子系统中用人工智能驱动的决策取代启发式方法的问题，并考虑了对内核设计、共享操作">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2023-12-20T00:51:16.000Z">
-<meta property="article:modified_time" content="2023-12-25T01:30:54.534Z">
+<meta property="article:modified_time" content="2024-02-01T01:27:25.037Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
   
@@ -93,7 +93,8 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h1 id="Intro"><a href="#Intro" class="headerlink" title="Intro"></a>Intro</h1><p>硬件的演变和多样化正在推动现代操作系统复杂性的爆炸性增长。CPU核心数量已经增长，新的内存技术如HBM和NVM以及像NUMA这样的组织已经变得司空见惯，新的网络和加速技术的出现，所有这些都对操作系统施加了压力，要求其进行高效的资源管理，以保持硬件的承诺。操作系统内核包含了用于管理这些资源的子系统，如内存管理器、I&#x2F;O和进程调度以及文件系统，目前依赖于启发式方法来处理对性能至关重要的复杂权衡空间。这些启发式方法是通过观察系统行为、结合内核开发者的经验来开发的，目标是提供合理的平均情况性能。</p>
+        <h1 id="Abstract"><a href="#Abstract" class="headerlink" title="Abstract"></a>Abstract</h1><p>摘要<br>现代操作系统（OS）的复杂性、硬件的快速多样化以及机器学习（ML）的稳步发展，促使我们探索 ML 在改进操作系统内核决策方面的潜力。我们猜想，ML 可以更好地管理内存管理、进程和 I&#x2F;O 调度等子系统的权衡空间，这些子系统目前依赖手工调整的启发式方法来提供合理的平均性能。我们探讨了在五个内核子系统中用人工智能驱动的决策取代启发式方法的问题，并考虑了对内核设计、共享操作系统级组件和访问硬件加速的影响。我们确定了内核空间中出现的障碍，应对了挑战，并描述了 ML 所能提供的优势的权衡。我们发现，使用 GPU 等专用硬件对于吸收 ML 决策所需的额外计算负荷至关重要，但内核空间中加速器的可及性较差，这是采用 ML 的一个障碍。我们还发现，ML 和加速对操作系统的益处取决于子系统、工作负载和硬件，这表明在内核中使用 ML 将需要框架来帮助内核开发人员驾驭新的权衡空间。为了应对这些挑战，我们建立了一个名为 LAKE 的系统，用于在内核空间中支持 ML 和公开加速器。LAKE 包括用于跨抽象层和模块边界的特征收集和管理的 API。LAKE 提供了管理加速可变收益的机制，以及缓解用户空间和内核空间之间资源争夺的接口。我们的研究表明，通过加速，一个由 ML 支持的 I&#x2F;O 延迟预测器的推理时间最多可缩短 96%。</p>
+<h1 id="Intro"><a href="#Intro" class="headerlink" title="Intro"></a>Intro</h1><p>硬件的演变和多样化正在推动现代操作系统复杂性的爆炸性增长。CPU核心数量已经增长，新的内存技术如HBM和NVM以及像NUMA这样的组织已经变得司空见惯，新的网络和加速技术的出现，所有这些都对操作系统施加了压力，要求其进行高效的资源管理，以保持硬件的承诺。操作系统内核包含了用于管理这些资源的子系统，如内存管理器、I&#x2F;O和进程调度以及文件系统，目前依赖于启发式方法来处理对性能至关重要的复杂权衡空间。这些启发式方法是通过观察系统行为、结合内核开发者的经验来开发的，目标是提供合理的平均情况性能。</p>
 <p>随着硬件和软件复杂性的不断增加，机器学习（ML）已经成为一个有吸引力的替代方案，有潜力更好地导航当前由启发式方法处理的操作系统权衡空间。用ML替换启发式方法可以实现使用实时观察到的行为训练的系统特定解决方案。虽然已经提出了在操作系统子系统中使用ML支持的策略，如CPU负载平衡、文件系统预取、I&#x2F;O延迟预测、控制CPU时钟和功率等，但以前的工作只关注了ML对单个子系统的潜在益处。我们则关注从将ML决策集成到操作系统内核中产生的系统挑战。</p>
 <p>我们研究了五个可以用ML决策增强的基于启发式的内核子系统，包括进程调度、内存管理等。我们发现了一些重要的挑战，包括以下几点。C1 使用专用硬件如GPU&#x2F;TPU对于降低ML算法的性能影响至关重要，但在内核空间中对加速器的可访问性较差是采用的障碍。加速器卸载在加速器是I&#x2F;O附加时引入了额外的开销，并且在用户和内核空间使用加速器之间产生了新的争用形式。C2 对于ML的加速的好处是子系统、工作负载和硬件依赖的，因为硬件加速必须摊销数据传输的成本。C3 在抽象层边界和需要跨层数据共享以暴露用于训练和推理的特性之间存在基本的紧张关系。我们在这篇论文中解决了这些挑战，并分享了我们构建学习辅助、加速内核（LAKE）的经验。</p>
 <p>为了解决C1，LAKE使用API远程调用为内核空间应用提供供应商支持的加速器接口（例如CUDA API），对于需要使用难以移植到内核空间的库的应用，提供自定义的高级API（例如TensorFlow）。LAKE通过在内核应用和用户空间组件之间进行零拷贝数据移动来减少开销。用户和内核空间对专用硬件的并发使用引入了争用，LAKE使用策略回调框架来管理这种争用。我们发现，管理这种争用所需的相同机制可以被重新用于解决C2，即专用硬件的可变利润性。LAKE提供了一个自定义的策略接口用于争用控制，当策略预测到争用或性能收益不足时，允许内核利用加速器或回退到较少的强度和&#x2F;或基于CPU的解决方案。LAKE通过一个内核特性存储来解决C3，简化了为收集数据以通知训练和推理的内核子系统进行检测的任务，基于预期异步和抽象层边界等挑战的API。</p>
@@ -212,7 +213,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/papers.github.io/archives/2023/12/">December 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/papers.github.io/archives/2023/11/">November 2023</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/papers.github.io/archives/2024/02/">February 2024</a></li><li class="archive-list-item"><a class="archive-list-link" href="/papers.github.io/archives/2024/01/">January 2024</a></li><li class="archive-list-item"><a class="archive-list-link" href="/papers.github.io/archives/2023/12/">December 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/papers.github.io/archives/2023/11/">November 2023</a></li></ul>
     </div>
   </div>
 
@@ -225,23 +226,23 @@
       <ul>
         
           <li>
+            <a href="/papers.github.io/2024/02/07/Deep-Learning-Focus/">Deep Learning Focus</a>
+          </li>
+        
+          <li>
+            <a href="/papers.github.io/2024/01/30/Code-Generation-Using-Machine-Learning-A-Systematic-Review/">Code Generation Using Machine Learning: A Systematic Review</a>
+          </li>
+        
+          <li>
+            <a href="/papers.github.io/2024/01/08/GPU-Acceleration-in-Unikernels-Using-Cricket-GPU-Virtualization/">GPU Acceleration in Unikernels Using Cricket GPU Virtualization</a>
+          </li>
+        
+          <li>
+            <a href="/papers.github.io/2024/01/08/Loupe-Driving-the-Development-of-OS-Compatibility-Layers/">Loupe: Driving the Development of OS Compatibility Layers</a>
+          </li>
+        
+          <li>
             <a href="/papers.github.io/2023/12/21/reading-list/">reading list</a>
-          </li>
-        
-          <li>
-            <a href="/papers.github.io/2023/12/20/Towards-a-Machine-Learning-Assisted-Kernel-with-LAKE/">Towards a Machine Learning-Assisted Kernel with LAKE</a>
-          </li>
-        
-          <li>
-            <a href="/papers.github.io/2023/12/08/Toward-Reconfigurable-Kernel-Datapaths-with-Learned-Optimizations/">Toward Reconfigurable Kernel Datapaths with Learned Optimizations</a>
-          </li>
-        
-          <li>
-            <a href="/papers.github.io/2023/12/06/learned-operating-system/">learned operating system</a>
-          </li>
-        
-          <li>
-            <a href="/papers.github.io/2023/12/05/DoOSAbstractionsMakeSenseOnFPGA/">OSDI20:Do OS Abstractions Make Sense On FPGA</a>
           </li>
         
       </ul>
@@ -257,7 +258,7 @@
   <div class="outer">
     <div id="footer-info" class="inner">
       
-      &copy; 2023 John Doe<br>
+      &copy; 2024 John Doe<br>
       Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
